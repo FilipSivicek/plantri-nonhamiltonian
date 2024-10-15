@@ -20356,7 +20356,6 @@ main(int argc, char *argv[])
 
     minpolydeg = -1;
     minpolyconnec = -1;
-
     if (pswitch && bswitch)                     bipartite_dispatch();
     else if (pswitch && minconnec >= 4)         polytope_c4_dispatch();
     else if (pswitch && minconnec < 4)          polytope_dispatch();
@@ -20367,6 +20366,7 @@ main(int argc, char *argv[])
     else if (minconnec >= 5 || minimumdeg >= 5) min5_dispatch();
     else if (minconnec >= 4 || minimumdeg >= 4) min4_dispatch();
     else                                        simple_dispatch();
+    
 
 #if CPUTIME
     times(&timestruct1);

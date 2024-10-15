@@ -49,27 +49,27 @@ plantri_min5: plantri.c
 	echo "plantri_min5 is obsolete.  Use plantri -m5."
 
 plantri_eulerian: plantri.c is_eulerian.c
-	${CC} -o plantri_eulerian ${CFLAGS} '-DPLUGIN="is_eulerian.c"' \
+	${CC} -o ./bin/plantri_eulerian ${CFLAGS} '-DPLUGIN="is_eulerian.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n4: plantri.c contains_clique_n4.c
-	${CC} -o contains_clique_n4 ${CFLAGS} '-DPLUGIN="contains_clique_n4.c"' \
+plantri_contains_clique_n4: plantri.c ./contains_clique/contains_clique_n4.c
+	${CC} -o ./bin/contains_clique_n4 ${CFLAGS} '-DPLUGIN="./contains_clique/contains_clique_n4.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n2: plantri.c contains_clique_n2.c
-	${CC} -o contains_clique_n2 ${CFLAGS} '-DPLUGIN="contains_clique_n2.c"' \
+plantri_contains_clique_n2: plantri.c ./contains_clique/contains_clique_n2.c
+	${CC} -o ./bin/contains_clique_n2 ${CFLAGS} '-DPLUGIN="./contains_clique/contains_clique_n2.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n: plantri.c contains_clique_n.c
-	${CC} -o contains_clique_n ${CFLAGS} '-DPLUGIN="contains_clique_n.c"' \
+plantri_contains_clique_n: plantri.c ./contains_clique/contains_clique_n.c
+	${CC} -o ./bin/contains_clique_n ${CFLAGS} '-DPLUGIN="./contains_clique/contains_clique_n.c"' \
 		plantri.c ${LDFLAGS}
 
 plantri_not_simple: plantri.c not_simple.c
-	${CC} -o not_simple ${CFLAGS} '-DPLUGIN="not_simple.c"' \
+	${CC} -o ./bin/not_simple ${CFLAGS} '-DPLUGIN="not_simple.c"' \
 		plantri.c ${LDFLAGS}
 
 plantri_self_edge: plantri.c self_edge.c
-	${CC} -o self_edge ${CFLAGS} '-DPLUGIN="self_edge.c"' \
+	${CC} -o ./bin/self_edge ${CFLAGS} '-DPLUGIN="self_edge.c"' \
 		plantri.c ${LDFLAGS}
 
 fullgen: fullgen.c
