@@ -9,6 +9,9 @@ tools: plantri_nft plantri_adj4 plantri_maxd plantri_mdcount plantri_ad \
        plantri_deg plantri_fo pccat plantri_eulerian plantri_contains_clique_n2 \
 	   plantri_not_simple
 
+plantri_my: plantri_contains_clique_n plantri_contains_clique_n2 plantri_contains_clique_n4 \
+	plantri_is_eulerian plantri_not_simple
+
 plantri: plantri.c
 	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS}
 
@@ -48,8 +51,8 @@ plantri_fo: plantri.c faceorbits.c
 plantri_min5: plantri.c
 	echo "plantri_min5 is obsolete.  Use plantri -m5."
 
-plantri_eulerian: plantri.c is_eulerian.c
-	${CC} -o ./bin/plantri_eulerian ${CFLAGS} '-DPLUGIN="is_eulerian.c"' \
+plantri_is_eulerian: plantri.c is_eulerian.c
+	${CC} -o ./bin/is_eulerian ${CFLAGS} '-DPLUGIN="is_eulerian.c"' \
 		plantri.c ${LDFLAGS}
 
 plantri_contains_clique_n4: plantri.c ./contains_clique/contains_clique_n4.c
@@ -63,6 +66,11 @@ plantri_contains_clique_n2: plantri.c ./contains_clique/contains_clique_n2.c
 plantri_contains_clique_n: plantri.c ./contains_clique/contains_clique_n.c
 	${CC} -o ./bin/contains_clique_n ${CFLAGS} '-DPLUGIN="./contains_clique/contains_clique_n.c"' \
 		plantri.c ${LDFLAGS}
+
+plantri_contains_clique_n_wa: plantri.c ./contains_clique/contains_clique_n_wa.c
+	${CC} -o ./bin/contains_clique_n_wa ${CFLAGS} '-DPLUGIN="./contains_clique/contains_clique_n_wa.c"' \
+		plantri.c ${LDFLAGS}
+
 
 plantri_not_simple: plantri.c not_simple.c
 	${CC} -o ./bin/not_simple ${CFLAGS} '-DPLUGIN="not_simple.c"' \

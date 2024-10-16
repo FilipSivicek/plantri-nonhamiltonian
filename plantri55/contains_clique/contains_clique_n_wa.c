@@ -35,9 +35,9 @@ static void create_AM(int AM[][nv+1]){
     }
 }
 
-#define FILTER contains_clique_n
+#define FILTER contains_clique_n_wa
 
-static int contains_clique_n(int nbtot, int nbop, int doflip){
+static int contains_clique_n_wa(int nbtot, int nbop, int doflip){
     int AM[nv+1][nv+1];
     memset(AM, 0, sizeof AM);
     create_AM(&AM);
