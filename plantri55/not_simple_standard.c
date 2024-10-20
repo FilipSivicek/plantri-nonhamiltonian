@@ -4,7 +4,7 @@
    not contain clique of size 4.
 */
 
-static void create_AM(int** AM){
+static void create_AM(int AM[][nv+1]){
     for (int i = 0; i < nv + (missing_vertex >= 0); i++){
         EDGE* e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
@@ -14,17 +14,12 @@ static void create_AM(int** AM){
     }
 }
 
-#define FILTER not_simple
+#define FILTER not_simple_standard
 
-static int not_simple(int nbtot, int nbop, int doflip){
-    int **AM = (int **)malloc((nv+1) * sizeof(int*));
-    for(int i = 0; i < nv+1; i++) AM[i] = (int *)malloc((nv+1) * sizeof(int));
-    for (int i = 0; i < nv; i++){
-        for (int j = 0; j < nv; j++){
-            AM[i][j] = 0;
-        }
-    }
-    create_AM(AM);
+static int not_simple_standard(int nbtot, int nbop, int doflip){
+    int AM[nv+1][nv+1];
+    memset(AM, 0, sizeof AM);
+    create_AM(&AM);
     int n_s = 0;
     for (int i = 0; i < nv+(missing_vertex >= 0); i++){
         n_s += AM[i][i];
@@ -34,10 +29,5 @@ static int not_simple(int nbtot, int nbop, int doflip){
             }
         }
     }
-    for (int i = 0; i < nv+1; i++){
-        free(AM[i]);
-    }
-    free(AM);
-    AM = NULL;
     return n_s > 0;
 }

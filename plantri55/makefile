@@ -10,7 +10,8 @@ tools: plantri_nft plantri_adj4 plantri_maxd plantri_mdcount plantri_ad \
 	   plantri_not_simple
 
 plantri_my: plantri_contains_clique_n plantri_contains_clique_n2 plantri_contains_clique_n4 \
-	plantri_is_eulerian plantri_not_simple
+	plantri_is_eulerian plantri_not_simple plantri_contains_hamilton plantri_contains_hamilton_not_checking \
+	plantri_contains_hamilton_ultra_checking_2 plantri_contains_hamilton_ultra_checking_3
 
 plantri: plantri.c
 	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS}
@@ -71,13 +72,36 @@ plantri_contains_clique_n_wa: plantri.c ./contains_clique/contains_clique_n_wa.c
 	${CC} -o ./bin/contains_clique_n_wa ${CFLAGS} '-DPLUGIN="./contains_clique/contains_clique_n_wa.c"' \
 		plantri.c ${LDFLAGS}
 
-
 plantri_not_simple: plantri.c not_simple.c
 	${CC} -o ./bin/not_simple ${CFLAGS} '-DPLUGIN="not_simple.c"' \
 		plantri.c ${LDFLAGS}
 
+plantri_not_simple_standard: plantri.c not_simple_standard.c
+	${CC} -o ./bin/not_simple_standard ${CFLAGS} '-DPLUGIN="not_simple_standard.c"' \
+		plantri.c ${LDFLAGS}
+
 plantri_self_edge: plantri.c self_edge.c
 	${CC} -o ./bin/self_edge ${CFLAGS} '-DPLUGIN="self_edge.c"' \
+		plantri.c ${LDFLAGS}
+
+plantri_contains_hamilton: plantri.c contains_hamilton.c
+	${CC} -o ./bin/contains_hamilton ${CFLAGS} '-DPLUGIN="contains_hamilton.c"' \
+		plantri.c ${LDFLAGS}
+
+plantri_contains_hamilton_not_checking: plantri.c contains_hamilton_not_checking.c
+	${CC} -o ./bin/contains_hamilton_not_checking ${CFLAGS} '-DPLUGIN="contains_hamilton_not_checking.c"' \
+		plantri.c ${LDFLAGS}
+
+plantri_contains_hamilton_ultra_checking: plantri.c contains_hamilton_ultra_checking.c
+	${CC} -o ./bin/contains_hamilton_ultra_checking ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking.c"' \
+		plantri.c ${LDFLAGS}
+
+plantri_contains_hamilton_ultra_checking_2: plantri.c contains_hamilton_ultra_checking_2.c
+	${CC} -o ./bin/contains_hamilton_ultra_checking_2 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_2.c"' \
+		plantri.c ${LDFLAGS}
+
+plantri_contains_hamilton_ultra_checking_3: plantri.c contains_hamilton_ultra_checking_3.c
+	${CC} -o ./bin/contains_hamilton_ultra_checking_3 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_3.c"' \
 		plantri.c ${LDFLAGS}
 
 fullgen: fullgen.c
