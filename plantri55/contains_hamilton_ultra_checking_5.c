@@ -10,7 +10,7 @@ Returns 1, if division is good, 0 if it is not good but can still be good
 and -1 if it cannot be good.
 */
 
-static int check_if_good(int v1, int v2, long long unsigned vertices){
+static int check_if_good(int v1, int v2, register long long unsigned vertices){
     //printf("vertices: %llu\n", vertices);
     //printf("v1, v2: %d, %d\n", v1, v2);
     if (v2 == nv){
@@ -76,7 +76,7 @@ static int check_if_good(int v1, int v2, long long unsigned vertices){
     return 0;
 }
 
-static int generate_vertices(int pos, int v1, int v2, long long unsigned vertices){
+static int generate_vertices(int pos, int v1, int v2, register long long unsigned vertices){
     if (pos >= nv){
         return 0;
     }
@@ -98,9 +98,9 @@ static int generate_vertices(int pos, int v1, int v2, long long unsigned vertice
     return h1 || h2;
 }
 
-#define FILTER contains_hamilton_ultra_checking_2
+#define FILTER contains_hamilton_ultra_checking_5
 
-static int contains_hamilton_ultra_checking_2(int nbtot, int nbop, int doflip){
+static int contains_hamilton_ultra_checking_5(int nbtot, int nbop, int doflip){
     register long long unsigned vertices = 0;
-    return !generate_vertices(0, -1, 0, vertices);
+    return !generate_vertices(2, -1, 0, vertices);
 }

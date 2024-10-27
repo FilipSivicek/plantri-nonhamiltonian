@@ -104,6 +104,15 @@ plantri_contains_hamilton_ultra_checking_3: plantri.c contains_hamilton_ultra_ch
 	${CC} -o ./bin/contains_hamilton_ultra_checking_3 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_3.c"' \
 		plantri.c ${LDFLAGS}
 
+plantri_contains_hamilton_ultra_checking_4: plantri.c contains_hamilton_ultra_checking_4.c
+	${CC} -o ./bin/contains_hamilton_ultra_checking_4 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_4.c"' \
+		plantri.c ${LDFLAGS}
+
+plantri_contains_hamilton_ultra_checking_5: plantri.c contains_hamilton_ultra_checking_5.c
+	${CC} -o ./bin/contains_hamilton_ultra_checking_5 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_5.c"' \
+		plantri.c ${LDFLAGS}
+
+
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
 
