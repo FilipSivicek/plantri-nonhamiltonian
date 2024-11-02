@@ -25,13 +25,13 @@ static int check_if_good(int v1, int v2, int vertices[]){
     }
     if (v1 == -1 || v2 == -1){ return 0;}
     
-    int active_vertices[nv+1];
+    int active_vertices[nv];
     active_vertices[0] = v1;
     active_vertices[1] = v2;
     int pos_front = 0;
     int pos_back = 2;
     
-    int parent[nv+1];
+    int parent[nv];
     memset(parent, -1, sizeof parent);
     parent[v1] = v1;
     parent[v2] = v2;
@@ -43,15 +43,19 @@ static int check_if_good(int v1, int v2, int vertices[]){
     while (pos_front < pos_back){
         int mom = active_vertices[pos_front];
         e = firstedge[mom];
+        int momColour = vertices[mom];
         for (int i = 0; i < degree[mom]; i++){
-            if (parent[e->end] == -1 && vertices[mom] == vertices[e->end]){
+            if (parent[e->end] == -1 && momColour == vertices[e->end]){
                 active_vertices[pos_back] = e->end;
                 pos_back++;
                 parent[e->end] = mom;
             }
-            else if (parent[e->end] != -1 && vertices[mom] == vertices[e->end]){
+            else if (parent[e->end] != -1 && momColour == vertices[e->end]){
                 if (parent[mom] != e->end){
-                    is_tree[vertices[mom]] = 0;
+                    is_tree[momColour] = 0;
+                    if(!is_tree[1]){
+                        return -1;
+                    }
                 }
             }
             e = e->next;
@@ -61,19 +65,19 @@ static int check_if_good(int v1, int v2, int vertices[]){
     for (int i = 0; i < nv; i++){
         if (parent[i] == -1){
             is_connected[vertices[i]] = 0;
+            if(!is_connected[0]){
+                return -1;
+            }
         }
     }
-    if (!is_tree[1] || !is_connected[0]){
-        return -1;
-    }
-    else if (is_tree[0] && is_tree[1] && is_connected[0] && is_connected[1]){
+    if (is_tree[0] && is_tree[1] && is_connected[0] && is_connected[1]){
         return 1;
     }
     return 0;
 }
 
 static int generate_vertices(int pos, int v1, int v2, int vertices[]){
-    if (pos >= nv + (missing_vertex >= 0)){
+    if (pos >= nv){
         return 0;
     }
     int is_good = check_if_good(v1, v2, vertices);
@@ -84,6 +88,9 @@ static int generate_vertices(int pos, int v1, int v2, int vertices[]){
         return 0;
     }
     int h1 = generate_vertices(pos+1, v1, v2, vertices);
+    if(h1){
+        return 1;
+    }
     vertices[pos] = 1;
     v1 = pos;
     if (vertices[v2] == 1){
@@ -91,30 +98,13 @@ static int generate_vertices(int pos, int v1, int v2, int vertices[]){
     }
     int h2 = generate_vertices(pos+1, v1, v2, vertices);
     vertices[pos] = 0;
-    return h1 || h2;
+    return h2;
 }
 
 #define FILTER contains_hamilton
 
 static int contains_hamilton(int nbtot, int nbop, int doflip){
-    int vertices[nv+1];
+    int vertices[nv];
     memset(vertices, 0, sizeof vertices);
     return !generate_vertices(0, -1, 0, &vertices);
 }
-
-    /*printf("vertices\n");
-    for (int i = 0; i < nv; i++){
-        printf("%d ", vertices[i]);
-    }
-    printf("\n");
-
-    printf("parent\n");
-    for (int i = 0; i < nv; i++){
-        printf("%d ", parent[i]);
-    }
-    printf("\n");
-    
-    printf("is_tree: %d, %d\n", is_tree[0], is_tree[1]);
-    printf("is_connected: %d, %d\n", is_connected[0], is_connected[1]);
-    */
-    

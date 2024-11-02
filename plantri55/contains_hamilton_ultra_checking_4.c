@@ -10,23 +10,22 @@ Returns 1, if division is good, 0 if it is not good but can still be good
 and -1 if it cannot be good.
 */
 
-static int check_if_good(int v1, int v2, register long long unsigned vertices){
-    //printf("vertices: %llu\n", vertices);
-    //printf("v1, v2: %d, %d\n", v1, v2);
-    if (v2 == nv){
-        v1 = -1;
-        v2 = -1;
-        for (int i = 0; i < nv; i++){
-            if (vertices&(1<<i)){
-                v1 = i;
-            }
-            else {
-                v2 = i;
-            }
+static int check_if_good(register unsigned long long vertices){
+    int v1 = -1;
+    int v2 = -1;
+    for (int i = 0; i < nv; i++){
+        if (vertices&(1<<i)){
+            v1 = i;
+        }
+        else {
+            v2 = i;
+        }
+        if (v1 >= 0 && v2>= 0){
+            break;
         }
     }
-    if (v1 < 0 || v2 < 0){ return 0;}
     
+    if (v1 < 0 || v2 < 0){ return 0;}
     int active_vertices[nv];
     active_vertices[0] = v1;
     active_vertices[1] = v2;
@@ -45,17 +44,22 @@ static int check_if_good(int v1, int v2, register long long unsigned vertices){
     while (pos_front < pos_back){
         int mom = active_vertices[pos_front];
         e = firstedge[mom];
+        int momColour = vertices&(1<<mom);
         for (int i = 0; i < degree[mom]; i++){
-            //printf("mom: %d\n", mom);
-            //printf("(vertices&(1<<mom) > 0): %llu\n", (vertices&(1<<mom) > 0));
-            if ((parent[e->end] < 0) && (((vertices&(1<<mom)) > 0) == ((vertices&(1<<e->end)) > 0))){
-                active_vertices[pos_back] = e->end;
-                pos_back++;
-                parent[e->end] = mom;
-            }
-            else if ((parent[e->end] < 0) && (((vertices&(1<<mom)) > 0) == ((vertices&(1<<e->end)) > 0))){
-                if (parent[mom] != e->end){
-                    is_tree[(vertices&(1<<mom) > 0)] = 0;
+            int endColour = vertices&1<<e->end;
+            if (((momColour > 0) == (endColour > 0))){
+                if((parent[e->end] == -1)){
+                    active_vertices[pos_back] = e->end;
+                    pos_back++;
+                    parent[e->end] = mom;
+                }
+                else {
+                    if (parent[mom] != e->end){
+                        is_tree[momColour > 0] = 0;
+                        if(!is_tree[1]){
+                            return -1;
+                        }
+                    }
                 }
             }
             e = e->next;
@@ -64,44 +68,41 @@ static int check_if_good(int v1, int v2, register long long unsigned vertices){
     }
     for (int i = 0; i < nv; i++){
         if (parent[i] == -1){
-            is_connected[(vertices&(1<<i) > 0)] = 0;
+            int iColour = vertices&(1<<i);
+            is_connected[iColour > 0] = 0;
+            if(!is_connected[0]){
+                return -1;
+            }
         }
     }
-    if (!is_tree[1] || !is_connected[0]){
-        return -1;
-    }
-    else if (is_tree[0] && is_tree[1] && is_connected[0] && is_connected[1]){
+    if (is_tree[0] && is_tree[1] && is_connected[0] && is_connected[1]){
         return 1;
     }
     return 0;
 }
 
-static int generate_vertices(int pos, int v1, int v2, register long long unsigned vertices){
+static int generate_vertices(register int pos, register unsigned long long vertices){
     if (pos >= nv){
         return 0;
     }
-    int is_good = check_if_good(v1, v2, vertices);
+    int is_good = check_if_good(vertices);
     if (is_good == 1){
         return 1;
     }
     if (is_good < 0){
         return 0;
     }
-    int next_pos = pos+1;
-    int h1 = generate_vertices(next_pos, v1, v2, vertices);
-    vertices += 1<<pos;
-    v1 = pos;
-    if (vertices&(1<<v2)){
-        v2 = pos+1;
+    int ans = generate_vertices(pos+1, vertices);
+    if(ans){
+        return 1;
     }
-    int h2 = generate_vertices(next_pos, v1, v2, vertices);
-    vertices -= 1<<pos;
-    return h1 || h2;
+    vertices += 1<<pos;
+    ans = generate_vertices(pos+1, vertices);
+    return ans;
 }
 
-#define FILTER contains_hamilton_ultra_checking_4
+#define FILTER contains_hamilton
 
-static int contains_hamilton_ultra_checking_4(int nbtot, int nbop, int doflip){
-    register long long unsigned vertices = 0;
-    return !generate_vertices(1, 0, 1, vertices);
+static int contains_hamilton(int nbtot, int nbop, int doflip){
+    return !generate_vertices(0, 0);
 }
