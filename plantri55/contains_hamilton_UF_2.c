@@ -9,65 +9,54 @@ int FIND(int p, int* UF){
 }
  
 void UNION(int p1, int p2, int* UF){
-    int f1 = FIND(p1, UF);
-    int f2 = FIND(p2, UF);
-    UF[f2] = f1;
+    UF[FIND(p2, UF)] = FIND(p1, UF);
 }
 
 //connect vertex pos to all surrounding vertices with same colour
-int connect(int pos, long long unsigned int *vertices, long long unsigned int *fixed, int *UF){
+int connect(int pos, unsigned long long *vertices, unsigned long long *fixed, int *UF){
     EDGE *e = firstedge[pos];
-    int posColour = (*vertices&(1<<pos)) > 0;
+    unsigned long long helper = *vertices&(1<<pos);
+    int posColour = helper > 0; 
     for (int i = 0; i < degree[pos]; i++){
         if (e->end < pos){
-            if (((*vertices&(1<<e->end)) > 0) == posColour){
+            helper = *vertices&(1<<e->end);
+            int endColour = helper > 0;
+            if (endColour == posColour){
                 if (FIND(e->end, UF) == FIND(pos, UF)){
                     return 0;
                 }
                 else{
                     UNION(e->end, pos, UF);
-                }
-            }
-        }
-        e = e->next;
-    }
-    
-    for (int i = 0; i < degree[pos]; i++){
-        if (((e->end < pos) || (*fixed&(1<<e->end)))&& (((*vertices&(1<<e->end)) > 0) == posColour)){
-            if ((e->next->end < pos) || (*fixed&(1<<e->next->end))){
-                if(((*vertices&(1<<e->next->end)) > 0) == posColour){
-                    return 0;
-                }
-            }
-            *fixed = *fixed | (1<<e->next->end);
-            *vertices |= (1-posColour) << (e->next->end);
-            if (e->prev->end < pos || (*fixed&(1<<e->prev->end))){
-                if (((*vertices&(1<<e->prev->end)) > 0) == posColour){
-                    return 0;
-                }
-            }
-            *fixed = *fixed | (1<<e->prev->end);
-            *vertices |= (1-posColour) << (e->prev->end);
-        }
-        e = e->next;
-    }
+                    helper = *vertices&(1<<e->next->end);
+                    int nextColour = helper > 0;
+                    if (*fixed&(1<<e->next->end) && (nextColour == posColour)){
+                        return 0;
+                    }
 
+                    helper = *vertices&(1<<e->prev->end);
+                    int prevColour = helper > 0;
+                    if (*fixed&(1<<e->prev->end) && (prevColour == posColour)){
+                        return 0;
+                    }
+
+                    *vertices |= (1-posColour)<<e->next->end;
+                    *fixed |= 1<<e->next->end;
+                    *vertices |= (1-posColour)<<e->prev->end;
+                    *fixed |= 1<<e->prev->end;
+                }
+            }
+        }
+        e = e->next;
+    }
     return 1;
 }
 
-static int generate_vertices(int pos, long long unsigned vertices, long long unsigned fixed, int* UF){
-    /*printf("pos: %d\n", pos);
-    printf("fixed: %llu\n", fixed);
-    printf("vertices: %llu\n", vertices);
-    for (int i = 0; i < nv; i++){
-        printf("UF[%d]: %d\n", i, UF[i]);
-    }*/
+static int generate_vertices(int pos, unsigned long long vertices, unsigned long long fixed, int* UF){
     if (pos >= nv){
-        //check if good
-        int comp0 = -1;
+        int comp0 = 0;
         int comp1 = -1;
 
-        for (int i = 0; i < nv; i++){
+        for (int i = 1; i < nv; i++){
             if (vertices&(1<<i)){
                 if (comp1 < 0){comp1 = FIND(i, UF);}
                 else{
@@ -75,10 +64,7 @@ static int generate_vertices(int pos, long long unsigned vertices, long long uns
                 }
             }
             else {
-                if (comp0 < 0){comp0 = FIND(i, UF);}
-                else {
-                    if (FIND(comp0, UF) != FIND(i, UF)){return 0;}
-                }
+                if (FIND(comp0, UF) != FIND(i, UF)){return 0;}
             }
         }
         return 1;
@@ -88,14 +74,12 @@ static int generate_vertices(int pos, long long unsigned vertices, long long uns
         if(connect(pos, &vertices, &fixed, UF)){
             return generate_vertices(pos+1, vertices, fixed, UF);
         }
-        else{
-            return 0;
-        }
+        return 0;
     }
 
-    long long unsigned int verticesCopy = vertices;
-    long long unsigned int fixedCopy = fixed;
-    
+    fixed |= 1<<pos;
+    unsigned long long copyVertices = vertices;
+    unsigned long long copyFixed = fixed;
     int* copyUF = (int *) malloc(nv * sizeof(int));
     for (int i = 0; i < nv; i++){
         copyUF[i] = UF[i];
@@ -103,8 +87,8 @@ static int generate_vertices(int pos, long long unsigned vertices, long long uns
 
     int ans = 0;
 
-    if (connect(pos, &verticesCopy, &fixedCopy, copyUF)){
-        ans = generate_vertices(pos+1, verticesCopy, fixedCopy, copyUF);
+    if (connect(pos, &copyVertices, &copyFixed, copyUF)){
+        ans = generate_vertices(pos+1, copyVertices, copyFixed, copyUF);
     }
     free(copyUF);
     if (ans){
@@ -116,20 +100,17 @@ static int generate_vertices(int pos, long long unsigned vertices, long long uns
     if (connect(pos, &vertices, &fixed, UF)){
         ans = generate_vertices(pos+1, vertices, fixed, UF);
     }
-
     return ans;
 }
 
 #define FILTER contains_hamilton_UF_2
 
 static int contains_hamilton_UF_2(int nbtot, int nbop, int doflip){
-    long long unsigned vertices = 0;
-    long long unsigned fixed = 0;
     int *UF = (int *) malloc(nv * sizeof(int));
     for (int i = 0; i < nv; i++){
         UF[i] = i;
     }
-    int ans = !generate_vertices(1, vertices, fixed, UF);
+    int ans = !generate_vertices(1, 0, 1, UF);
     free(UF);
     return ans;
 }

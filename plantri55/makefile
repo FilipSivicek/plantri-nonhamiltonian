@@ -96,20 +96,20 @@ plantri_contains_hamilton_ultra_checking: plantri.c contains_hamilton_ultra_chec
 	${CC} -o ./bin/contains_hamilton_ultra_checking ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_ultra_checking_2: plantri.c contains_hamilton_ultra_checking_2.c
-	${CC} -o ./bin/contains_hamilton_ultra_checking_2 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_2.c"' \
+plantri_contains_hamilton_UF_1: plantri.c contains_hamilton_UF_1.c
+	${CC} -o ./bin/contains_hamilton_UF_1 ${CFLAGS} '-DPLUGIN="contains_hamilton_UF_1.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_ultra_checking_3: plantri.c contains_hamilton_ultra_checking_3.c
-	${CC} -o ./bin/contains_hamilton_ultra_checking_3 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_3.c"' \
+plantri_contains_hamilton_UF_2: plantri.c contains_hamilton_UF_2.c
+	${CC} -o ./bin/contains_hamilton_UF_2 ${CFLAGS} '-DPLUGIN="contains_hamilton_UF_2.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_ultra_checking_4: plantri.c contains_hamilton_ultra_checking_4.c
-	${CC} -o ./bin/contains_hamilton_ultra_checking_4 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_4.c"' \
+plantri_contains_hamilton_UF_3: plantri.c contains_hamilton_UF_3.c
+	${CC} -o ./bin/contains_hamilton_UF_3 ${CFLAGS} '-DPLUGIN="contains_hamilton_UF_3.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_ultra_checking_5: plantri.c contains_hamilton_ultra_checking_5.c
-	${CC} -o ./bin/contains_hamilton_ultra_checking_5 ${CFLAGS} '-DPLUGIN="contains_hamilton_ultra_checking_5.c"' \
+plantri_contains_hamilton_UF_4: plantri.c contains_hamilton_UF_4.c
+	${CC} -o ./bin/contains_hamilton_UF_4 ${CFLAGS} '-DPLUGIN="contains_hamilton_UF_4.c"' \
 		plantri.c ${LDFLAGS}
 
 

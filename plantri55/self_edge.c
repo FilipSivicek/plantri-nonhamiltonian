@@ -6,11 +6,14 @@
 
 static void create_AM(int AM[][nv+1]){
     for (int i = 0; i < nv + (missing_vertex >= 0); i++){
+        printf("%d\n", i);
         EDGE* e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
+            printf("%d ", e->end);
             AM[i][e->end] += 1;
             e = e->next;
         }
+        printf("\n");
     }
 }
 
