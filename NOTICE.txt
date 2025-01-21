@@ -2,5 +2,6 @@ This project is a derivative work of plantri, which was made by Gunnar Brinkmann
 
 I have modified files makefile.
 
-Programs which I have created are located in directory my_work
+
+I have created 2 shell scripts - tester.sh and updater.sh. Other programs that I have created are located in directory planri55/my_work.
 
