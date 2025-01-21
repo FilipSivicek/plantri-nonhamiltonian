@@ -1,0 +1,6 @@
+This project is a derivative work of plantri, which was made by Gunnar Brinkmann and Brendan McKay and is available at https://users.cecs.anu.edu.au/~bdm/plantri/
+
+I have modified files makefile.
+
+Programs which I have created are located in directory my_work
+

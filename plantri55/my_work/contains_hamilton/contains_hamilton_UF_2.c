@@ -18,7 +18,7 @@ int connect(int pos, unsigned long long *vertices, unsigned long long *fixed, in
     unsigned long long helper = *vertices&(1<<pos);
     int posColour = helper > 0; 
     for (int i = 0; i < degree[pos]; i++){
-        if (e->end < pos){
+        if (*fixed&(1<<e->end)){
             helper = *vertices&(1<<e->end);
             int endColour = helper > 0;
             if (endColour == posColour){
@@ -71,10 +71,8 @@ static int generate_vertices(int pos, unsigned long long vertices, unsigned long
     }
 
     if(fixed&(1<<pos)){
-        if(connect(pos, &vertices, &fixed, UF)){
-            return generate_vertices(pos+1, vertices, fixed, UF);
-        }
-        return 0;
+        connect(pos, &vertices, &fixed, UF);
+        return generate_vertices(pos+1, vertices, fixed, UF);
     }
 
     fixed |= 1<<pos;

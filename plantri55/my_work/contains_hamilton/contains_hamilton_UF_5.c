@@ -13,12 +13,14 @@ void UNION(int p1, int p2, int* UF){
 }
 
 int generate_vertices(register int pos, register unsigned long long vertices, register int* UF){
+    int i;
+    int endColour;
     if (pos >= nv){
         //check if good
         int comp0 = FIND(0, UF);
         int comp1 = -1;
 
-        for (int i = 1; i < nv; i++){
+        for (i = 1; i < nv; i++){
             if (vertices&(1<<i)){
                 if (comp1 < 0){
                     comp1 = FIND(i, UF);
@@ -41,10 +43,10 @@ int generate_vertices(register int pos, register unsigned long long vertices, re
     EDGE *e = firstedge[pos];
     
     int canColour = 1;
-    for (int i = 0; i < degree[pos]; i++){
+    for (i = 0; i < degree[pos]; i++){
         if (e->end < pos){
-            int endColour = vertices&(1<<e->end); 
-            if (endColour == 0){
+            endColour = vertices&(1<<e->end); 
+            if (!endColour){
                 if (FIND(e->end, copyUF) == FIND(pos, copyUF)){
                     canColour = 0;
                     break;
@@ -65,15 +67,13 @@ int generate_vertices(register int pos, register unsigned long long vertices, re
 
     if (ans){return 1;}
     
-    vertices += 1<<pos;
-    canColour = 1;
-    for (int i = 0; i < degree[pos]; i++){
+    vertices |= 1<<pos;
+    for (i = 0; i < degree[pos]; i++){
         if (e->end < pos){
-            int endColour = vertices&(1<<e->end); 
+            endColour = vertices&(1<<e->end); 
             if (endColour > 0){
                 if (FIND(e->end, UF) == FIND(pos, UF)){
-                    canColour--;
-                    break;
+                    return 0;
                 }
                 else{
                     UNION(e->end, pos, UF);
@@ -83,10 +83,7 @@ int generate_vertices(register int pos, register unsigned long long vertices, re
         e = e->next;
     }
 
-    if (canColour){
-        ans = generate_vertices(pos+1, vertices, UF);
-    }
-    return ans;
+    return generate_vertices(pos+1, vertices, UF);
 }
 
 #define FILTER contains_hamilton_UF_5

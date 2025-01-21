@@ -15,6 +15,7 @@ void UNION(int p1, int p2, int* UF){
     UF[FIND(p2, UF)] = FIND(p1, UF);
 }
 
+
 int generate_fixed(int pos, unsigned long long *vertices, unsigned long long *fixed,
     unsigned long long *newFixed){
     
@@ -119,7 +120,7 @@ static int generate_vertices(int pos, unsigned long long vertices, unsigned long
 
     ///*
     if (fixed&(1<<pos)){
-        if (connect(pos, &vertices, UF)){
+        if(connect(pos, &vertices, UF)){
             return generate_vertices(pos+1, vertices, fixed, newFixed, UF);
         }
         return 0;
@@ -154,6 +155,19 @@ static int generate_vertices(int pos, unsigned long long vertices, unsigned long
 #define FILTER contains_hamilton_UF_3
 
 static int contains_hamilton_UF_3(int nbtot, int nbop, int doflip){
+    
+    for (int i = 0; i < nv; i++){
+        if (degree[i] == 4){
+            EDGE *e = firstedge[i];
+            for (int j = 0; j < 4; j++){
+                if(degree[e->end] == 4){
+                    return 0;
+                }
+                e = e->next;
+            }
+        }
+    }
+
     int *UF = (int *) malloc(nv * sizeof(int));
     for (int i = 0; i < nv; i++){
         UF[i] = i;

@@ -25,5 +25,10 @@ file1=./output/$1_$3_$4.txt
 file2=./output/$2_$3_$4.txt
 ./bin/$1 -$3 $4 $file1
 ./bin/$2 -$3 $4 $file2
-echo "The difference is:"
-diff $file1 $file2
+
+for last; do true; done
+
+if [ $last = "diff" ]; then
+    echo "The difference is:"
+    diff $file1 $file2
+fi

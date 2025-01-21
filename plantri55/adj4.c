@@ -24,9 +24,9 @@ adj4_filter(int nbtot, int nbop, int doflip)
 	if (degree[e->end] == 4) ++n4;
 	e = e->next;
 	if (degree[e->end] == 4) ++n4;
-        e = e->next;
-        if (degree[e->end] == 4) ++n4;
-        e = e->next;
+    e = e->next;
+    if (degree[e->end] == 4) ++n4;
+    e = e->next;
 	if (degree[e->end] == 4) ++n4;
 	if (n4 >= 2) return FALSE;
     }
