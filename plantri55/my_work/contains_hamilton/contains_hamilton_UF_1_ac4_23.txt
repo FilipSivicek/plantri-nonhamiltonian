@@ -1,4 +1,0 @@
-23 bcdef,afghijkc,abkld,aclmnope,adpqf,aeqgb,bfqrh,bgrsi,bhstj,bituk,bjulc,ckumd,dlun,dmuvo,dnvrp,dorqe,eprgf,gqpovwsh,hrwti,iswuj,jtwvnmlk,nuwro,rvuts
-23 bcdef,afghc,abhid,acije,adjkf,aekgb,bfklmnopqrh,bgric,chrjd,dirqpstulke,ejlgf,gkjum,gluvn,gmvwo,gnwsp,gosjq,gpjr,gqjih,jpowt,jswvu,jtvml,mutwn,nvtso
-23 bcdef,afghijklmnc,abnod,acope,adpqf,aeqgb,bfqrh,bgroi,bhosj,bistk,bjtul,bkuvm,blvsn,bmsoc,cnsihrpd,dorqe,eprgf,gqpoh,ionmvwtj,jswuk,ktwvl,luwsm,svut
-3 triangulations written to stdout; cpu=2856.46 sec
