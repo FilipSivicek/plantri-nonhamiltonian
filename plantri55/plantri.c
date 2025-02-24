@@ -370,7 +370,7 @@ static EDGE edges[NUMEDGES];
 #define P_op(n) (edges + 24 + 12*(n))
 #define Q_op(n) (edges + 24 + 12*MAXN + 6*(n))
 
-#define four_op(n) (edges+6*(n))
+#define four_op(n) (edges + 6*(n))
 #define five_op(n) (edges + 6*MAXN + 6*(n))
 #define S_op(n) (edges + 12*MAXN + 18*(n))
 

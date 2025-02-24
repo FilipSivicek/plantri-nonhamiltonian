@@ -1,0 +1,5 @@
+*.pdf
+plantri55/bin
+plantri55/output
+.*.swp
+ignore-*
