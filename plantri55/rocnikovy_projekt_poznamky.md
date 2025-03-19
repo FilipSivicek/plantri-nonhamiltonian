@@ -1,10 +1,22 @@
 # Rocnikovy projekt
 
 
-## Kanonicky kod
+## Vyber z prace
+
+### Kanonicky kod
 The method of isomorph rejection used by plantri is the canonical construction
 path method of McKay [36] (also called the method of canonical augmentation [34]).
 
+### Vyroba kanonickeho kodu
+
+This method is evidently of quadratic time, but in practice we can make it much
+faster on average. Instead of starting at every pair (v, e), we need start only at some
+combinatorially-defined subset of such pairs. For example, we could choose v to be a
+vertex of maximum degree, and, subject to that, e to be an edge incident with v that
+is incident with a face of largest size. Moreover, we can abort a scan as soon as it
+becomes apparent that it can give neither an automorphism nor a canonical labelling.
+This speedup is improved by using a nontrivial invariant, such as the degree, for the
+colour of each vertex.
 
 ### numbering
 static EDGE *numbering[2*MAXE][MAXE]; 
@@ -40,3 +52,5 @@ Potrebujem si pozriet:
 make_colour(
 canon(
 valid5edge(
+
+
