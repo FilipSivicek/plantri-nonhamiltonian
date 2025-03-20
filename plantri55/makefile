@@ -126,6 +126,9 @@ plantri_contains_hamilton_UF_5: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains
 	${CC} -o ./bin/contains_hamilton_UF_5 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_5.c"' \
 		plantri.c ${LDFLAGS}
 
+plantri_no_symetry: plantri.c ./${MY_DIRECTORY}/no_symetry.c
+	${CC} -o ./bin/no_symetry ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/no_symetry.c"' plantri.c ${LDFLAGS}
+
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
 
