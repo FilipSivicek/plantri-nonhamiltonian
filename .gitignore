@@ -6,3 +6,6 @@ ignore-*
 cage
 plantri55/my_work/output
 plantri55/my_work/configs
+.vscode
+text_files
+
