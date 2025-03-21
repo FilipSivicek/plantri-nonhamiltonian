@@ -22,22 +22,13 @@ static int no_symetry(int nbtot, int nbop, int doflip){
             if (testcanon(e, representation, rcolour) == 1){
                 same_representation++;
             }
-            if (same_representation > 0){
-                return FALSE;
-            }
-            e = e->next;
-        }
-    }
-
-    for (int i = 0; i < nv; i++){
-        EDGE *e = firstedge[i];
-        for (int j = 0; j < degree[i]; j++){
             if (testcanon_mirror(e, representation, rcolour) == 1){
                 same_representation++;
             }
             if (same_representation > 0){
                 return FALSE;
             }
+
             e = e->next;
         }
     }

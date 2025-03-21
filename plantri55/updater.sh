@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# updates listed programs
 if [ ! -d "./bin" ]; then
     mkdir ./bin
 fi

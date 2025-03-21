@@ -2,7 +2,9 @@
 
 ## Tester is used for testing if 2 algorithms generate same output
 ## Only makes sence to use with programs testing same property.
-
+## First argument is name of first program, second is name of second program.
+## Third argument are switches to be used for plantri. Fourth argument is number of vertices
+## Fifth argument is optional. If it is diff, then difference between outputs is displayed
 echo "Starting tester"
 
 if [ ! -d "./bin" ]; then
