@@ -9,12 +9,11 @@ CLIQUE=contains_clique
 all: plantri fullgen
 
 tools: plantri_nft plantri_adj4 plantri_maxd plantri_mdcount plantri_ad \
-       plantri_deg plantri_fo pccat plantri_eulerian plantri_contains_clique_n2 \
-	   plantri_not_simple
+       plantri_deg plantri_fo pccat
 
 plantri_my: plantri_contains_clique_n plantri_contains_clique_n2 plantri_contains_clique_n4 \
 	plantri_is_eulerian plantri_not_simple plantri_contains_hamilton plantri_contains_hamilton_not_checking \
-        plantri_contains_hamilton_UF_5	
+        plantri_contains_hamilton_UF_5 plantri_only_mirror_symetries plantri_no_symetry
 
 plantri: plantri.c
 	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS}
@@ -128,6 +127,9 @@ plantri_contains_hamilton_UF_5: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains
 
 plantri_no_symetry: plantri.c ./${MY_DIRECTORY}/no_symetry.c
 	${CC} -o ./bin/no_symetry ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/no_symetry.c"' plantri.c ${LDFLAGS}
+
+plantri_only_mirror_symetries: plantri.c ./${MY_DIRECTORY}/only_mirror_symetries.c
+	${CC} -o ./bin/only_mirror_symetries ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/only_mirror_symetries.c"' plantri.c ${LDFLAGS}
 
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
