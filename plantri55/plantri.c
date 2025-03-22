@@ -370,7 +370,7 @@ static EDGE edges[NUMEDGES];
 #define P_op(n) (edges + 24 + 12*(n))
 #define Q_op(n) (edges + 24 + 12*MAXN + 6*(n))
 
-#define four_op(n) (edges + 6*(n))
+#define four_op(n) (edges+6*(n))
 #define five_op(n) (edges + 6*MAXN + 6*(n))
 #define S_op(n) (edges + 12*MAXN + 18*(n))
 
@@ -1051,8 +1051,6 @@ switch_edge_back(EDGE *e)
 
 /**************************************************************************/
 
-// This function tests, if given edge can be start of canonical labeling
-// This function also calculates, if any automorphisms are found
 static int 
 testcanon(EDGE *givenedge, int representation[], int colour[])
 
@@ -1665,8 +1663,7 @@ canon(int lcolour[], EDGE *can_numberings[][MAXE], int *nbtot, int *nbop)
 
 /* determine the smallest possible end for the vertex "last_vertex" */
 
-    list_length_last = 1; 
-    startlist_last[0] = end = firstedge[last_vertex];
+    list_length_last = 1; startlist_last[0] = end = firstedge[last_vertex];
     maxend = colour[end->end];
 
     for (run = end->next; run != end; run = run->next)
@@ -5723,8 +5720,6 @@ scandouble(int nbtot, int nbop, int numdoubles,
 
 /****************************************************************************/
 
-// When the last vertex has smallest colour, canonical code of this graph starts there
-// F.S.
 static int
 make_colours(int col[], EDGE *e3)
 /* Make better colours for maxdeg=3, supposing that expand3() has been
@@ -5739,13 +5734,10 @@ make_colours(int col[], EDGE *e3)
     register EDGE *e;
     register int v1,v2,v3;
  
-
-    // These are neighbours of the new vertex
     v1 = e3->start;
     v2 = e3->end;
     v3 = e3->next->end;
  
-    // Colour calculating magic
     c0 =  (1 << ((++degree[v1])&7))
         + (1 << ((++degree[v2])&7))
         + (1 << ((++degree[v3])&7));
@@ -5755,42 +5747,31 @@ make_colours(int col[], EDGE *e3)
  
     for (i = nv; --i >= 0;)
     {
-        // Only vertices with degree 3 can have same colour as e3.
         if (degree[i] != 3)
             col[i] = degree[i];
         else
         {
-
-            // Calculate colour of e3
             e = firstedge[i]; 
             c = (1 << (degree[e->end]&7))
               + (1 << (degree[e->next->end]&7))
               + (1 << (degree[e->next->next->end]&7));
-
-            // If some vertex can have better colour, it is now optimal to start canonical code 
-            //from vertex nv, co we do not expand there
             if (c > c0)  
             {
-                // set degrees to original before exiting
                 --degree[v1];
                 --degree[v2];
                 --degree[v3];
                 return 0;
             }
-
-            // i has same colour as nv
             else if (c == c0) 
             {
                 col[i] = 2;
                 ++nc;
             }
-            // colour of i is same as its degree
             else 
                 col[i] = 3;
         }
     }
-
-    // set degrees to original before exiting
+ 
     --degree[v1];
     --degree[v2];
     --degree[v3];
@@ -5831,8 +5812,7 @@ mark_edge_orbits(EDGE *edge[], int count, int minimal[], int nbtot)
    if not.  Orbits on undirected edges are considered. */
 {
     int i;
-    EDGE **nb0,**nb,**nblim;                
-
+    EDGE **nb0,**nb,**nblim;
  
     if (nbtot == 1) 
         for (i = 0; i < count; ++i) minimal[i] = 1;
@@ -20376,6 +20356,7 @@ main(int argc, char *argv[])
 
     minpolydeg = -1;
     minpolyconnec = -1;
+
     if (pswitch && bswitch)                     bipartite_dispatch();
     else if (pswitch && minconnec >= 4)         polytope_c4_dispatch();
     else if (pswitch && minconnec < 4)          polytope_dispatch();
@@ -20386,7 +20367,6 @@ main(int argc, char *argv[])
     else if (minconnec >= 5 || minimumdeg >= 5) min5_dispatch();
     else if (minconnec >= 4 || minimumdeg >= 4) min4_dispatch();
     else                                        simple_dispatch();
-    
 
 #if CPUTIME
     times(&timestruct1);
