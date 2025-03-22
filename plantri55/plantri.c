@@ -20473,5 +20473,8 @@ main(int argc, char *argv[])
 #endif
 #endif
 
+    if (outfilename != NULL){
+        fclose(outfile);
+    }
     return 0;
 }
