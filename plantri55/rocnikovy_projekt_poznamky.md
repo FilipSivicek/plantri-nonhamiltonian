@@ -59,7 +59,5 @@ valid5edge(
 ### extend4
    - pokazi sa aj IBA po e3
    - nepokazi sa, ak sa pouzije viackrat za sebou
-   - pokazi sa, ked chceme davat na ine miesta, ked chceme, aby boli niekde inde tie ostatne hrany (priklad operation_b_without_e3)
-
-
-
+   - pokazi sa, ked chceme davat na ine miesta, ked chceme, aby boli niekde inde tie ostatne hrany (priklad
+   operation_b_without_e3)
