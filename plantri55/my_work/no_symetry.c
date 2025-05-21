@@ -2,6 +2,8 @@
 
    This plug-in filters out graphs with symetries
 */
+#pragma once
+#include "../plantri.c"
 
 static int testcanon(EDGE *givenedge, int representation[], int colour[]);
 static void testcanon_first_init(EDGE *givenedge, int representation[], int colour[]);

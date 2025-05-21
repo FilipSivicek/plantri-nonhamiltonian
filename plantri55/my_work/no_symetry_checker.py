@@ -4,29 +4,29 @@
 # all graphs without automorphisms and checking If
 # S1 = S2 U S3
 
-name1 = input("Insert whole set filename: ")
+name1 =  "/home/filip/Desktop/univerzita/semester3/rocnikovyProjekt/plantri55/my_work/text_files/whole_set.txt" # input("Insert whole set filename: ")
 file1 = open(name1) #whole set
 
 whole_set = set()
 
 for line in file1:
     whole_set.add(line)
-print(len(whole_set))
+#print(len(whole_set))
 
-name2 = input("Insert with automorphism set filename: ")
+name2 = "/home/filip/Desktop/univerzita/semester3/rocnikovyProjekt/plantri55/my_work/text_files/only_symetries.txt" # input("Insert with automorphism set filename: ")
 file2 = open(name2)
 
 other_set = set()
 
 for line in file2:
     other_set.add(line)
-print(len(other_set))
+#print(len(other_set))
 
-name3 = input("Insert without automorphism set filename: ")
+name3 = "/home/filip/Desktop/univerzita/semester3/rocnikovyProjekt/plantri55/my_work/text_files/no_symetries.txt" # input("Insert without automorphism set filename: ")
 file3 = open(name3)
 
 for line in file3:
     other_set.add(line)
-print(len(other_set))
+#print(len(other_set))
 
 print(other_set == whole_set)

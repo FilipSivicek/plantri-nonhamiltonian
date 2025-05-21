@@ -1,7 +1,7 @@
 #define VERSION "5.5 - May 17, 2024"
 #define SWITCHES "[-uagsETh -Ac#txm#P#bpe#f#qQ -odGVX -v]"
 #define TMP
-
+#pragma once
 /* plantri.c :  generate imbedded planar graphs 
 
   This program generates many different classes of graph imbedded on 
@@ -1233,32 +1233,39 @@ testcanon_first_init(EDGE *givenedge, int representation[], int colour[])
    returned in "representation".  It works pretty similar to testcanon except 
    for obviously necessary changes, so for extensive comments see testcanon */
 {
+
     register EDGE *run;
     register int vertex;
     EDGE *temp;  
     EDGE *startedge[MAXN+1]; 
     int number[MAXN], i; 
     int last_number, actual_number;
-
- 
+    
+    
     for (i = 0; i < nv; i++) number[i] = 0;
- 
+    
     number[givenedge->start] = 1;
     if (givenedge->start != givenedge->end)
-      {
+    {
         number[givenedge->end] = 2;
         last_number = 2;
         startedge[1] = givenedge->invers;
-      }
+    }
     else last_number = 1; 
-
+    
     actual_number = 1;
     temp = givenedge;
-
+    
+    // printf("nv first init: %d\n", nv);
+    // printf("last_number first init: %d\n", last_number);
     while (last_number < nv)
     {  
+        // printf("run: %d\n", temp->next);
         for (run = temp->next; run != temp; run = run->next)
           { vertex = run->end;
+            // printf("run: %d\n", run);
+            // printf("vertex: %d\n", vertex);
+            // printf("number[vertex]: %d\n", number[vertex]);
             if (!number[vertex])
               { startedge[last_number] = run->invers;
                 last_number++; number[vertex] = last_number; 

@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -O4
+CFLAGS= 
 LDFLAGS=
 VERSION=55
 MY_DIRECTORY=my_work
@@ -130,6 +130,30 @@ plantri_no_symetry: plantri.c ./${MY_DIRECTORY}/no_symetry.c
 
 plantri_only_mirror_symetries: plantri.c ./${MY_DIRECTORY}/only_mirror_symetries.c
 	${CC} -o ./bin/only_mirror_symetries ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/only_mirror_symetries.c"' plantri.c ${LDFLAGS}
+
+plantri_scansimple_my: plantri.c ./${MY_DIRECTORY}/scansimple_my.c
+	${CC} -o ./bin/scansimple_my ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/scansimple_my.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_operation_b: plantri.c ./${MY_DIRECTORY}/operation_b.c
+	${CC} -o ./bin/operation_b ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/operation_b.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_operation_b_without_e3: plantri.c ./${MY_DIRECTORY}/operation_b_without_e3.c
+	${CC} -o ./bin/operation_b_without_e3 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/operation_b_without_e3.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_multiple_e3: plantri.c ./${MY_DIRECTORY}/multiple_e3.c
+	${CC} -o ./bin/multiple_e3 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/multiple_e3.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_multiple_e3_with_e4: plantri.c ./${MY_DIRECTORY}/multiple_e3_with_e4.c
+	${CC} -o ./bin/multiple_e3_with_e4 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/multiple_e3_with_e4.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_extend4: plantri.c ./${MY_DIRECTORY}/extend4.c
+	${CC} -o ./bin/extend4 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/extend4.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_multiple_e4: plantri.c ./${MY_DIRECTORY}/multiple_e4.c
+	${CC} -o ./bin/multiple_e4 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/multiple_e4.c"' plantri.c ${LDFLAGS} -ggdb3
+
+plantri_operation_b_with_looking_for_edges: plantri.c ./${MY_DIRECTORY}/operation_b_with_looking_for_edges.c
+	${CC} -o ./bin/operation_b_with_looking_for_edges ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/operation_b_with_looking_for_edges.c"' plantri.c ${LDFLAGS} -ggdb3
 
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}

@@ -19,7 +19,7 @@ This speedup is improved by using a nontrivial invariant, such as the degree, fo
 colour of each vertex.
 
 ### numbering
-static EDGE *numbering[2*MAXE][MAXE]; 
+static EDGE $*numbering[2*MAXE][MAXE]$; 
   /* holds numberings produced by canon() or canon_edge() */
 
 
@@ -52,5 +52,14 @@ Potrebujem si pozriet:
 make_colour(
 canon(
 valid5edge(
+
+## Analyza eX operacii
+### extend3 
+   - funguje bez problemov aj viac opakovani
+### extend4
+   - pokazi sa aj IBA po e3
+   - nepokazi sa, ak sa pouzije viackrat za sebou
+   - pokazi sa, ked chceme davat na ine miesta, ked chceme, aby boli niekde inde tie ostatne hrany (priklad operation_b_without_e3)
+
 
 
