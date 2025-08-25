@@ -1,5 +1,5 @@
 #define VERSION "5.5 - May 17, 2024"
-#define SWITCHES "[-uagsETh -Ac#txm#P#bpe#f#qQ -odGVX -v]"
+#define SWITCHES "[-uagsEFTh -Ac#txm#P#bpe#f#qQ -odGVX -v]"
 #define TMP
 #pragma once
 /* plantri.c :  generate imbedded planar graphs 
@@ -342,6 +342,9 @@ static int aswitch,        /* presence of command-line switches */
            Vswitch,
            xswitch,
            Xswitch;
+
+// new switch to process graph from text file
+static int Fswitch;
 
 static int zeroswitch;     /* Undocumented option -0, writes digits */
 static int oneswitch;      /* Undocumented option -1, implies -0 */
@@ -3279,6 +3282,7 @@ write_edgecode(FILE *f, int doflip)
 
     compute_edgecode(code,&length,&headerlength);
 
+
     if (fwrite(code,sizeof(unsigned char),length,f) != length)
     {
         fprintf(stderr,">E %s: fwrite() failed\n",cmdname);
@@ -3314,6 +3318,8 @@ write_dual_edgecode(FILE *f, int doflip)
         }
 
     compute_dual_edgecode(code,&length,&headerlength);
+
+
     if (fwrite(code,sizeof(unsigned char),length,f) != length)
     {
         fprintf(stderr,">E %s: fwrite() failed\n",cmdname);
@@ -3839,6 +3845,15 @@ write_planar_code(FILE *f, int doflip)
     
     length=nv+ne+1;
     compute_code(code);
+
+    for (int i = 0; i < MAXN + MAXE + 1; i++){
+        if (code[i] == '\0'){
+            break;
+        }
+        printf("%d", code[i]);
+    }
+    printf("\n");
+
     if (fwrite(code,sizeof(unsigned char),length,f) != length)
     {
         fprintf(stderr,">E %s: fwrite() failed\n",cmdname);
@@ -18982,6 +18997,8 @@ decode_command_line(int argc, char *argv[])
     gswitch = FALSE;
     sswitch = FALSE;
     Eswitch = FALSE;
+    // new switch to process graph from text file
+    Fswitch = FALSE;
     Tswitch = FALSE;
     Gswitch = FALSE;
     hswitch = FALSE;
@@ -19021,6 +19038,8 @@ decode_command_line(int argc, char *argv[])
             BOOLSWITCH('g',gswitch)
             BOOLSWITCH('s',sswitch)
             BOOLSWITCH('E',Eswitch)
+            // new switch to process graph from text file
+            BOOLSWITCH('F',Fswitch)
             BOOLSWITCH('T',Tswitch)
             BOOLSWITCH('u',uswitch)
             BOOLSWITCH('v',vswitch)
@@ -19051,11 +19070,14 @@ decode_command_line(int argc, char *argv[])
             else  
             {
                 CHECKSWITCH(arg[j]);
+                fprintf(stdout, "tu1\n");
                 badargs = TRUE;
             }
         }
-        else if (argsgot >= 3)
+        else if (argsgot >= 3){
+            fprintf(stdout, "tu2\n");
             badargs = TRUE;
+        }
         else if (argsgot == 0)
         {
             j = -1;
@@ -19067,15 +19089,20 @@ decode_command_line(int argc, char *argv[])
                     exit(1);
                 }
                 else  maxnv = maxnv / 2 + 2;
-            else if (arg[j+1] != '\0')
+            else if (arg[j+1] != '\0'){
+                fprintf(stdout, "tu3\n");
                 badargs = TRUE;
+            }
             ++argsgot;
         }
         else
         {
             if (arg[0] == '-')
             {
-                if (argsgot == 0) badargs = TRUE;
+                if (argsgot == 0) {
+                    fprintf(stdout, "tu4\n");
+                    badargs = TRUE;
+                }
             }
             else if (sscanf(arg,"%d/%d",&ares,&amod) == 2)
             {
@@ -19088,7 +19115,10 @@ decode_command_line(int argc, char *argv[])
         }   
     }
 
-    if (argsgot == 0) badargs = TRUE;
+    if (argsgot == 0) {
+        fprintf(stdout, "tu5\n");
+        badargs = TRUE;
+    }
 
     if (badargs)
     {
@@ -20100,6 +20130,69 @@ multiquadrangulation_dispatch(void)
 /****************************************************************************/
 
 static void
+get_graph_from_file(void)
+/* Reading graph from file */
+{
+    FILE* fptr = fopen(outfilename, "r");
+    char graph_string[600];
+
+    printf("getting graph from file\n");
+    printf("%s\n", outfilename);
+
+    fscanf(fptr, "%s", graph_string);
+    printf("grap_string: %s\n", graph_string);
+
+    int next_ch = 0;
+    EDGE connecting_edges[maxnv][maxnv];
+    for (int i = 0; i < maxnv; i++){
+        char ch;
+        int j = 0;
+        while (graph_string[next_ch] != '\0'){
+            ch = graph_string[next_ch];
+            next_ch++;
+            if (ch == ','){
+                break;
+            }
+
+            connecting_edges[i][j] = (EDGE){0, 0, 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0};
+            connecting_edges[i][j].start = i;
+            connecting_edges[i][j].end = ch - 'a';
+            ne++;
+            j++;
+        }
+        degree[i] = j;
+    }
+    nv = maxnv;
+
+
+    for (int i = 0; i < maxnv; i++){
+        for (int j = 0; j < degree[i]; j++){
+            connecting_edges[i][j].next = &connecting_edges[i][(j + 1) % degree[i]];
+            connecting_edges[i][j].prev = &connecting_edges[i][(j - 1 + degree[i]) % degree[i]];
+
+            int end_vertex = connecting_edges[i][j].end;
+            for (int k = 0; k < degree[end_vertex]; k++){
+                if (connecting_edges[end_vertex][k].end == i){
+                    connecting_edges[i][j].invers = &connecting_edges[end_vertex][k];
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < maxnv; i++){
+        firstedge[i] = &connecting_edges[i][0];
+    }
+
+    FILE* outf1 = fopen("result1.txt", "w");
+    FILE* outf2 = fopen("result2.txt", "w");
+    write_graph6(outf1, 0);
+    write_alpha(outf2, 0);
+
+    exit(EXIT_SUCCESS);   
+}
+
+static void
 bipartite_dispatch(void)
 
 /* General bipartite graphs.  Main options are -m# -c# for #=1,2,3.  */
@@ -20382,6 +20475,7 @@ main(int argc, char *argv[])
     minpolyconnec = -1;
 
     if (pswitch && bswitch)                     bipartite_dispatch();
+    if (Fswitch)                                get_graph_from_file();
     else if (pswitch && minconnec >= 4)         polytope_c4_dispatch();
     else if (pswitch && minconnec < 4)          polytope_dispatch();
     else if (polygonsize>=0)                    polygon_dispatch();
