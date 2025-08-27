@@ -1,7 +1,7 @@
 *.pdf
 plantri55/bin
 plantri55/output
-.*.swp
+.*swp
 ignore-*
 cage
 plantri55/my_work/output

@@ -8,11 +8,30 @@ static void extend3(EDGE *e);
 static void extend4(EDGE *e, EDGE *list[]);
 static void reduce3(EDGE *e);
 static void reduce4(EDGE *e, EDGE *list[]);
-static int make_colours(int col[], EDGE *e3);
-static int canon(int lcolour[], EDGE *can_numberings[][MAXE],
-    int *nbtot, int *nbop);
     
 static void write_graph6(FILE *f, int doflip);
+
+void printer(int POUT){
+    printf("Printing\n");
+    for (int i = 0; i < POUT; i++){
+        EDGE *e = firstedge[i];
+        if (e == NULL);
+        for (int j = 0; j < degree[i]; j++){
+            printf("%d ", e->end);
+            e = e->next;
+        }
+        printf("\n");
+    }
+}
+
+void edge_printer(FILE* f){
+    fprintf(f, "Printing edges\n");
+    for (int i = 0; i < NUMEDGES; i++){
+        EDGE e = edges[i];
+        if (&e == NULL) break;
+        fprintf(f,"start: %d, end: %d\n", e.start, e.end);  
+    }
+}
 
 static void
 find_extensions(int numb_total, int numb_pres,
@@ -20,32 +39,38 @@ find_extensions(int numb_total, int numb_pres,
     EDGE *ext4[], int *numext4,
     EDGE *ext5[], int *numext5);
     
-static void extend_b(EDGE *ext, EDGE* list[], int nbtot, int nbop){
+static void extend_b(EDGE *ext, EDGE* list[], int nbtot, int nbop, int doflip){
     EDGE* list1[2];
     EDGE* list2[2];
     
-    EDGE *ext3[MAXE/3],*ext4[MAXE/2],*ext5[MAXE];
-    int next3,next4,next5;
-    EDGE *save_list[4];
-    register int i;
-    register EDGE *e1,*e2,**nb,**nblim;
-    EDGE *e,*ex;
-    int nc,xnbtot,xnbop,v,needed_deg;
-    int colour[MAXN];
-    EDGE *firstedge_save[MAXE];
-    
-    find_extensions(nbtot,nbop,ext3,&next3,ext4,&next4,ext5,&next5);
-    make_colours(colour, ext);
-    
+
+    FILE *f1 = fopen("edges1.txt", "w");
+    FILE *f2 = fopen("edges2.txt", "w");
+    FILE *f3 = fopen("edges3.txt", "w");
+    FILE *f4 = fopen("edges4.txt", "w");
+    int POUT = 20;
+
+    edge_printer(f1);
+
     extend3(ext);
-    canon(degree,numbering,&xnbtot,&xnbop);    
+    write_graph6(outfile, doflip);
+    printer(POUT);
+
+    edge_printer(f2);
     
-    find_extensions(nbtot,nbop,ext3,&next3,ext4,&next4,ext5,&next5);
     extend4(ext->next->next, list1);
+    write_graph6(outfile, doflip);
+    printer(POUT);
+
+    edge_printer(f3);
     
-    //find_extensions(nbtot,nbop,ext3,&next3,ext4,&next4,ext5,&next5);
     extend4(ext, list2);
-    
+    write_graph6(outfile, doflip);
+    printf("Printing\n");
+    printer(POUT);
+
+    edge_printer(f4);
+
     list[0] = list1[0];
     list[1] = list1[1];
     
@@ -56,6 +81,11 @@ static void extend_b(EDGE *ext, EDGE* list[], int nbtot, int nbop){
 static void reduce_b(EDGE *e, EDGE *list[]){
     EDGE *list1[2];
     EDGE *list2[2];
+
+    FILE *f1 = fopen("reducing1.txt", "w");
+    FILE *f2 = fopen("reducing2.txt", "w");
+    FILE *f3 = fopen("reducing3.txt", "w");
+    FILE *f4 = fopen("reducing4.txt", "w");
     
     list1[0] = list[0];
     list1[1] = list[1];
@@ -63,11 +93,19 @@ static void reduce_b(EDGE *e, EDGE *list[]){
     list2[0] = list[2];
     list2[1] = list[3];
     
+    edge_printer(f1);
+
     reduce4(e, list2);
     
+    edge_printer(f2);
+
     reduce4(e->next->next, list1);
+
+    edge_printer(f3);
     
     reduce3(e);
+
+    edge_printer(f4);
 }
 
 #define FILTER find_op_b
@@ -90,10 +128,14 @@ static int find_op_b(int nbtot, int nbop, int doflip){
 
                 EDGE *list[4];
                 
-                extend_b(e, list, nbtot, nbop);
+                write_graph6(outfile, doflip);
+
+                extend_b(e, list, nbtot, nbop, doflip);
                 write_graph6(outfile, doflip);
 
                 reduce_b(e, list);
+                write_graph6(outfile, doflip);
+
                 return TRUE;
             }
         }

@@ -628,6 +628,16 @@ show_group(FILE *f, int nbtot, int nbop)
 }
 
 /**************************************************************************/
+/* My implementations of extendX
+   F.S.
+*/
+
+static void my_extend3(EDGE *e){
+    register EDGE *work1, *work2, *work3;
+};
+
+
+/**************************************************************************/
 
 /* Routines for extending and reducing a triangulation.
    General principle:  extendx(e); reducex(e)  will extend by one 
@@ -651,7 +661,6 @@ extend3(EDGE *e)
     firstedge[nv] = work3+1;
 
 /* work1 starts at the beginning of e: */
-
     work1->start = work1->invers->end = e->start;
     e->next->prev = work1;
     work1->next = e->next;
@@ -2700,6 +2709,9 @@ initialize_min4(void)
 
 /**************************************************************************/
 
+/* Research this function F.S.
+*/
+
 static void
 initialize_triang(void) 
 
@@ -4018,6 +4030,9 @@ write_alpha(FILE *f, int doflip)
     size_t length;
 
     length=nv+ne;
+
+    printf("length: %d\n", length);
+
     compute_code(precode);
 
     if (nv >= 10) 
@@ -20129,20 +20144,35 @@ multiquadrangulation_dispatch(void)
 
 /****************************************************************************/
 
+static void edge_printer(FILE* f){
+    fprintf(f, "Printing edges\n");
+    for (int i = 0; i < NUMEDGES; i++){
+        EDGE e = edges[i];
+        if (&e == NULL) break;
+        fprintf(f,"start: %d, end: %d\n", e.start, e.end);  
+    }
+}
+
 static void
 get_graph_from_file(void)
 /* Reading graph from file */
 {
+    initialize_triang();
+
+    printf("code_edge: %d\n", code_edge);
+    printf("code_edge == NULL: %d\n", code_edge == NULL);
+
     FILE* fptr = fopen(outfilename, "r");
-    char graph_string[600];
+    char graph_string[MAXE + MAXN + 1];
 
     printf("getting graph from file\n");
     printf("%s\n", outfilename);
 
     fscanf(fptr, "%s", graph_string);
-    printf("grap_string: %s\n", graph_string);
-
+    printf("graph_string: %s\n", graph_string);
+    
     int next_ch = 0;
+    ne = 0;
     EDGE connecting_edges[maxnv][maxnv];
     for (int i = 0; i < maxnv; i++){
         char ch;
@@ -20163,8 +20193,8 @@ get_graph_from_file(void)
         degree[i] = j;
     }
     nv = maxnv;
-
-
+    printf("nv: %d\n", nv);
+    
     for (int i = 0; i < maxnv; i++){
         for (int j = 0; j < degree[i]; j++){
             connecting_edges[i][j].next = &connecting_edges[i][(j + 1) % degree[i]];
@@ -20184,13 +20214,44 @@ get_graph_from_file(void)
         firstedge[i] = &connecting_edges[i][0];
     }
 
-    FILE* outf1 = fopen("result1.txt", "w");
-    FILE* outf2 = fopen("result2.txt", "w");
-    write_graph6(outf1, 0);
-    write_alpha(outf2, 0);
+    FILE* outf = fopen("result.txt", "w");
+    
+    write_alpha(outf, 0);
+    printf("initialization done\n");
+    
+    EDGE* e = firstedge[0];
+    EDGE* list4[2];
+    EDGE* list5[4];
+
+    printf("e->start: %d, e->end: %d\n", e->start, e->end);
+    extend3(e);
+    write_alpha(outf, 0);
+    printf("extend3 done\n");
+
+    reduce3(e);
+    write_alpha(outf, 0);
+    printf("reduce3 done\n");
+
+    extend4(e, list4);
+    write_alpha(outf, 0);
+    printf("extend4 done\n");
+
+    reduce4(e, list4);
+    write_alpha(outf, 0);
+    printf("reduce4 done\n");
+
+    extend5(e, list5);
+    write_alpha(outf, 0);
+    printf("extend5 done\n");
+
+    reduce5(e, list5);
+    write_alpha(outf, 0);
+    printf("reduce5 done\n");
 
     exit(EXIT_SUCCESS);   
 }
+
+/****************************************************************************/
 
 static void
 bipartite_dispatch(void)
@@ -20474,8 +20535,11 @@ main(int argc, char *argv[])
     minpolydeg = -1;
     minpolyconnec = -1;
 
+    FILE *beginning_edges = fopen("begginning_edges.txt", "w");
+    edge_printer(beginning_edges);
+
     if (pswitch && bswitch)                     bipartite_dispatch();
-    if (Fswitch)                                get_graph_from_file();
+    else if (Fswitch)                           get_graph_from_file();
     else if (pswitch && minconnec >= 4)         polytope_c4_dispatch();
     else if (pswitch && minconnec < 4)          polytope_dispatch();
     else if (polygonsize>=0)                    polygon_dispatch();
