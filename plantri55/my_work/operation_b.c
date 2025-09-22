@@ -11,6 +11,8 @@ static void reduce4(EDGE *e, EDGE *list[]);
     
 static void write_graph6(FILE *f, int doflip);
 
+static void edge_printer(FILE *f);
+
 void printer(int POUT){
     printf("Printing\n");
     for (int i = 0; i < POUT; i++){
@@ -21,15 +23,6 @@ void printer(int POUT){
             e = e->next;
         }
         printf("\n");
-    }
-}
-
-void edge_printer(FILE* f){
-    fprintf(f, "Printing edges\n");
-    for (int i = 0; i < NUMEDGES; i++){
-        EDGE e = edges[i];
-        if (&e == NULL) break;
-        fprintf(f,"start: %d, end: %d\n", e.start, e.end);  
     }
 }
 
@@ -48,26 +41,25 @@ static void extend_b(EDGE *ext, EDGE* list[], int nbtot, int nbop, int doflip){
     FILE *f2 = fopen("edges2.txt", "w");
     FILE *f3 = fopen("edges3.txt", "w");
     FILE *f4 = fopen("edges4.txt", "w");
-    int POUT = 20;
-
+    
     edge_printer(f1);
 
     extend3(ext);
     write_graph6(outfile, doflip);
-    printer(POUT);
+    printer(nv);
 
     edge_printer(f2);
     
     extend4(ext->next->next, list1);
     write_graph6(outfile, doflip);
-    printer(POUT);
+    printer(nv);
 
     edge_printer(f3);
     
     extend4(ext, list2);
     write_graph6(outfile, doflip);
     printf("Printing\n");
-    printer(POUT);
+    printer(nv);
 
     edge_printer(f4);
 

@@ -1,5 +1,8 @@
 /* PLUGIN file to use with plantri.c */
 
+#pragma once
+#include "../plantri.c"
+
 static void create_AM(int** AM){
     for (int i = 0; i < nv + (missing_vertex >= 0); i++){
         EDGE* e = firstedge[i];

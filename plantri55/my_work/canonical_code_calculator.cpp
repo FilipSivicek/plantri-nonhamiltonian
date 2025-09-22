@@ -31,7 +31,7 @@ int main(){
     for (int v = 0; v < n; v++){
         for (int e = 0; e < neigh[v].size(); e++){
             // colour of vertex v
-            // if some vertex does not have colour, it whas discovered by that edge
+            // if some vertex does not have colour, it was discovered by that edge
             vector<int> colour(n, -1);
             colour[v] = n + 1;
 

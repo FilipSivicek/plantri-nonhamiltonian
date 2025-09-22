@@ -628,14 +628,16 @@ show_group(FILE *f, int nbtot, int nbop)
 }
 
 /**************************************************************************/
-/* My implementations of extendX
-   F.S.
-*/
 
-static void my_extend3(EDGE *e){
-    register EDGE *work1, *work2, *work3;
-};
+static void
+slow_extend3(EDGE *e){
+    register EDGE *work1,*work2, *work3;
 
+    work1 = STAR3(nv);
+    work2 = work1 + 1;
+    work3 = work2 + 1;
+    firstedge[nv] = work3 + 1;
+}
 
 /**************************************************************************/
 
@@ -4030,8 +4032,6 @@ write_alpha(FILE *f, int doflip)
     size_t length;
 
     length=nv+ne;
-
-    printf("length: %d\n", length);
 
     compute_code(precode);
 
@@ -20147,9 +20147,11 @@ multiquadrangulation_dispatch(void)
 static void edge_printer(FILE* f){
     fprintf(f, "Printing edges\n");
     for (int i = 0; i < NUMEDGES; i++){
-        EDGE e = edges[i];
-        if (&e == NULL) break;
-        fprintf(f,"start: %d, end: %d\n", e.start, e.end);  
+        EDGE *e = &edges[i];
+        fprintf(f,"start: %d, end: %d\n", e->start, e->end);
+        if (e == NULL){
+            fprintf(f, "e is null\n");
+        } 
     }
 }
 
@@ -20158,9 +20160,6 @@ get_graph_from_file(void)
 /* Reading graph from file */
 {
     initialize_triang();
-
-    printf("code_edge: %d\n", code_edge);
-    printf("code_edge == NULL: %d\n", code_edge == NULL);
 
     FILE* fptr = fopen(outfilename, "r");
     char graph_string[MAXE + MAXN + 1];
@@ -20193,7 +20192,6 @@ get_graph_from_file(void)
         degree[i] = j;
     }
     nv = maxnv;
-    printf("nv: %d\n", nv);
     
     for (int i = 0; i < maxnv; i++){
         for (int j = 0; j < degree[i]; j++){

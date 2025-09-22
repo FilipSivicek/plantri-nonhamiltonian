@@ -155,6 +155,14 @@ plantri_multiple_e4: plantri.c ./${MY_DIRECTORY}/multiple_e4.c
 plantri_operation_b_with_looking_for_edges: plantri.c ./${MY_DIRECTORY}/operation_b_with_looking_for_edges.c
 	${CC} -o ./bin/operation_b_with_looking_for_edges ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/operation_b_with_looking_for_edges.c"' plantri.c ${LDFLAGS} -ggdb3
 
+plantri_max_degree: plantri.c ./${MY_DIRECTORY}/max_degree.c
+	${CC} -o ./bin/max_degree ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/max_degree.c"' plantri.c ${LDFLAGS} -ggdb3
+
+GP=gadgets_priority
+plantri_${GP}: plantri.c ./${MY_DIRECTORY}/${GP}.c
+	${CC} -o ./bin/${GP} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP}.c"' plantri.c ${LDFLAGS} -ggdb3
+
+
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
 
