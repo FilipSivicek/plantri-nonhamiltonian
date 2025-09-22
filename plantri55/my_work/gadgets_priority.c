@@ -16,23 +16,23 @@ static int correct_neigh_degrees(int neigh[], int degree[], int dgr, int correct
     return fours >= correct4 && fives >= correct5 && sixes >= correct6;
 }
 
-// vertices are index from 1
 static int priority_calculator(int code[], int num_v){
+    // vertices are index from 1
     int al[num_v + 1][num_v-1];
     int dgr[num_v + 1];
-
+    
     al[1][0] = 2;
     al[2][0] = 1;
     int curr = 1;
     int index = 0;
-    int vert_disc = 3;
+    int vert_disc = 2;
     while (curr <= num_v){
         int edge = 1;
         while (code[index] != 0){
             if (code[index] > num_v){
+                vert_disc++;
                 al[curr][edge] = vert_disc;
                 al[vert_disc][0] = curr;
-                vert_disc++;
             }
             else {
                 al[curr][edge] = code[index];
@@ -106,26 +106,25 @@ static int priority_calculator(int code[], int num_v){
                     int five2 = -1;
                     int five3 = -2;
                     for (int j = 0; j < 4; j++){
-                        if (dgr[al[i][j]] == 5){
-                            if (five1 == -1){
-                                five1 = al[i][j];
-                            }
-                            else if (five2 == -1){
-                                five2 = al[i][j];
-                            }
+                        if (dgr[al[i][j]] == 5 && dgr[al[i][(j + 1) % dgr[i]]] == 5){
+                            five1 = al[i][j];
+                            five2 = al[i][(j + 1) % dgr[i]];
+                            break;
                         }
                     }
 
-                    for (int j = 0; j < 5; j++){
-                        if (al[five1][j] == five2){
-                            five3 = -1;
-                            if (dgr[al[five1][(j + 1) % 5]] == 5){
-                                five3 = al[five1][(j + 1) % 5];
+                    if (five1 != -1){
+                        for (int j = 0; j < 5; j++){
+                            if (al[five1][j] == five2){
+                                five3 = -1;
+                                if (dgr[al[five1][(j + 1) % 5]] == 5){
+                                    five3 = al[five1][(j + 1) % 5];
+                                }
+                                else if (dgr[al[five1][(j + 4) % 5]] == 5){
+                                    five3 = al[five1][(j + 4) % 5];
+                                }
+                                break;
                             }
-                            else if (dgr[al[five1][(j + 4) % 5]] == 5){
-                                five3 = al[five1][(j + 4) % 5];
-                            }
-                            break;
                         }
                     }
 
@@ -167,10 +166,14 @@ static int priority_calculator(int code[], int num_v){
             // A
             if (correct_neigh_degrees(al[i], dgr, 5, 5, 3, 1)){
                 int five1 = -1;
+                int four1 = -1;
+                int four2 = -1;
                 for (int j = 0; j < 5; j++){
                     if (dgr[al[i][j]] == 5){
                         if (dgr[al[i][(j + 1) % 5]] == 4){
-                            if (dgr[al[i][(j + 6) % 5]] == 4){
+                            if (dgr[al[i][(j + 4) % 5]] == 4){
+                                four1 = al[i][(j + 1) % 5];
+                                four2 = al[i][(j + 4) % 5];
                                 five1 = al[i][j];
                             }
                         }
@@ -188,19 +191,6 @@ static int priority_calculator(int code[], int num_v){
                     }
 
                     if (five2 != -1){
-                        int four1 = -1;
-                        int four2 = -1;
-                        for (int j = 0; j < 5; j++){
-                            if (dgr[al[i][j]] == 4){
-                                if (four1 == -1){
-                                    four1 = al[i][j];
-                                }
-                                else if (four2 == -1){
-                                    four2 = al[i][j];
-                                }
-                            }
-                        }
-
                         // if five1 is found there must be 2 vertices with degree 4
                         if (correct_neigh_degrees(al[four1], dgr, 4, 4, 4, 1)
                         && correct_neigh_degrees(al[four2], dgr, 4, 4, 4, 1)){
@@ -216,28 +206,21 @@ static int priority_calculator(int code[], int num_v){
             // B
             if (correct_neigh_degrees(al[i], dgr, 5, 5, 3, 2)){
                 int five1 = -1;
+                int four1 = -1;
+                int four2 = -1;
                 for (int j = 0; j < 5; j++){
                     if (dgr[al[i][j]] == 5){
                         if (dgr[al[i][(j + 1) % 5]] == 4){
-                            if (dgr[al[i][(j + 6) % 5]] == 4){
+                            if (dgr[al[i][(j + 4) % 5]] == 4){
+                                four1 = al[i][(j + 1) % 5];
+                                four2 = al[i][(j + 4) % 5];
                                 five1 = al[i][j];
                             }
                         }
                     }
                 }
                 if (five1 != -1){
-                    int four1 = -1;
-                    int four2 = -1;
-                    for (int j = 0; j < 5; j++){
-                        if (dgr[al[i][j]] == 4){
-                            if (four1 == -1){
-                                four1 = al[i][j];
-                            }
-                            else if (four2 == -1){
-                                four2 = al[i][j];
-                            }
-                        }
-                    }
+                    // if five1 is found there must be 2 vertices with degrees 4
                     if (correct_neigh_degrees(al[four1], dgr, 4, 4, 4, 2)
                     && correct_neigh_degrees(al[four2], dgr, 4, 4, 4, 2)){
                         if (correct_neigh_degrees(al[five1], dgr, 5, 5, 3, 2)){
@@ -248,11 +231,7 @@ static int priority_calculator(int code[], int num_v){
             }
 
             // H
-            int correct = 0;
-            for (int j = 0; j < 5; j++){
-                correct += dgr[al[i][j]] >= 5;
-            }
-            if (correct == 5){
+            if (correct_neigh_degrees(al[i], dgr, 5, 5, 5, 0)){
                 return 7;
             }
         }
