@@ -163,7 +163,7 @@ static int priority_calculator(int code[], int num_v){
         }
 
         if (dgr[i] == 5){
-            // A
+            // A & B
             if (correct_neigh_degrees(al[i], dgr, 5, 5, 3, 1)){
                 int five1 = -1;
                 int four1 = -1;
@@ -189,41 +189,22 @@ static int priority_calculator(int code[], int num_v){
                             }
                         }
                     }
-
+                    // A
                     if (five2 != -1){
                         // if five1 is found there must be 2 vertices with degree 4
                         if (correct_neigh_degrees(al[four1], dgr, 4, 4, 4, 1)
-                        && correct_neigh_degrees(al[four2], dgr, 4, 4, 4, 1)){
-                            if (correct_neigh_degrees(al[five1], dgr, 5, 5, 3, 1)
-                            && correct_neigh_degrees(al[five2], dgr, 5, 5, 3, 2)){
-                                return 0;
-                            }
+                        && correct_neigh_degrees(al[four2], dgr, 4, 4, 4, 1)
+                        && correct_neigh_degrees(al[five1], dgr, 5, 5, 3, 1)
+                        && correct_neigh_degrees(al[five2], dgr, 5, 5, 3, 2)){
+                            return 0;
                         }
                     }
-                }
-            }
-
-            // B
-            if (correct_neigh_degrees(al[i], dgr, 5, 5, 3, 2)){
-                int five1 = -1;
-                int four1 = -1;
-                int four2 = -1;
-                for (int j = 0; j < 5; j++){
-                    if (dgr[al[i][j]] == 5){
-                        if (dgr[al[i][(j + 1) % 5]] == 4){
-                            if (dgr[al[i][(j + 4) % 5]] == 4){
-                                four1 = al[i][(j + 1) % 5];
-                                four2 = al[i][(j + 4) % 5];
-                                five1 = al[i][j];
-                            }
-                        }
-                    }
-                }
-                if (five1 != -1){
-                    // if five1 is found there must be 2 vertices with degrees 4
-                    if (correct_neigh_degrees(al[four1], dgr, 4, 4, 4, 2)
-                    && correct_neigh_degrees(al[four2], dgr, 4, 4, 4, 2)){
-                        if (correct_neigh_degrees(al[five1], dgr, 5, 5, 3, 2)){
+                    // B
+                    else {
+                        if (correct_neigh_degrees(al[i], dgr, 5, 5, 3, 2)
+                        && correct_neigh_degrees(al[four1], dgr, 4, 4, 4, 2)
+                        && correct_neigh_degrees(al[four2], dgr, 4, 4, 4, 2)
+                        && correct_neigh_degrees(al[five1], dgr, 5, 5, 3, 2)){
                             return 1;
                         }
                     }
