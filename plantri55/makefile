@@ -162,6 +162,10 @@ GP=gadgets_priority
 plantri_${GP}: plantri.c ./${MY_DIRECTORY}/${GP}.c
 	${CC} -o ./bin/${GP} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP}.c"' plantri.c ${LDFLAGS} -ggdb3
 
+GP2=gadgets_priority_v2
+plantri_${GP2}: plantri.c ./${MY_DIRECTORY}/${GP2}.c
+	${CC} -o ./bin/${GP2} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP2}.c"' plantri.c ${LDFLAGS} -ggdb3
+
 
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
