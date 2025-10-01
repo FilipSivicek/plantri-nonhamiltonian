@@ -1,5 +1,5 @@
 #pragma once
-#include "../plantri.c"
+#include "../../plantri.c"
 
 static void extend3(EDGE *e);
 static void extend4(EDGE *e, EDGE *list[]);

@@ -18,16 +18,12 @@ static void rep_printer(int code[], int num_v){
     printf("\n");
 }
 
-static void my_test_canon_first_init(){}
-
 static int priority_calculator_v2(int code[], int num_v){
     // vertices are index from 1
     int seq[num_v + 1];
     
     int index = 0;
-    if (num_v >= 9){
-        num_v = 9;
-    }
+    if (num_v >= 9) num_v = 9;
 
     for (int curr = 1; curr <= num_v; curr++){
         int edge = 1;
@@ -122,13 +118,6 @@ static int gadgets_priority(int nbtot, int nbop, int doflip){
         }
     }
     
-    /*
-    printf("rep: ");
-    rep_printer(rep, nv);
-    printf("rep2: ");
-    rep_printer(rep2, nv);
-    //*/
-
     int res = priority_calculator_v2(rep2, nv);
     if (res >= 0){
         printf("gadget: %d\n", res);

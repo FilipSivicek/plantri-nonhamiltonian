@@ -629,18 +629,6 @@ show_group(FILE *f, int nbtot, int nbop)
 
 /**************************************************************************/
 
-static void
-slow_extend3(EDGE *e){
-    register EDGE *work1,*work2, *work3;
-
-    work1 = STAR3(nv);
-    work2 = work1 + 1;
-    work3 = work2 + 1;
-    firstedge[nv] = work3 + 1;
-}
-
-/**************************************************************************/
-
 /* Routines for extending and reducing a triangulation.
    General principle:  extendx(e); reducex(e)  will extend by one 
    vertex of degree x (x=3,4,5) then reduce it to the original graph.  
@@ -20155,9 +20143,41 @@ static void edge_printer(FILE* f){
     }
 }
 
+static void extend_b(EDGE *ext, EDGE* list[]){
+    EDGE* list1[2];
+    EDGE* list2[2];
+
+    extend3(ext->next->next);
+    extend4(ext->next, list1);
+    extend4(ext, list2);
+    
+    list[0] = list1[0];
+    list[1] = list1[1];
+    
+    list[2] = list2[0];
+    list[3] = list2[1];
+}
+        
+static void reduce_b(EDGE *e, EDGE *list[]){
+    EDGE *list1[2];
+    EDGE *list2[2];
+
+    list1[0] = list[0];
+    list1[1] = list[1];
+    
+    list2[0] = list[2];
+    list2[1] = list[3];
+    
+    reduce4(e, list2);
+    reduce4(e->next, list1);
+    reduce3(e->next->next);
+}
+
 static void
 get_graph_from_file(void)
-/* Reading graph from file */
+/* Reading graph from file 
+   F.S. 
+*/
 {
     initialize_triang();
 
@@ -20217,35 +20237,33 @@ get_graph_from_file(void)
     write_alpha(outf, 0);
     printf("initialization done\n");
     
-    EDGE* e = firstedge[0];
-    EDGE* list4[2];
-    EDGE* list5[4];
+    for (int i = 0; i < nv; i++){
+        if (degree[i] == 4){
+            int higher_5 = 0;
+            EDGE *e = firstedge[i];
+            for (int j = 0; j < 4; j++){
+                if (degree[e->end] >= 5){
+                    higher_5++;
+                }
+                else {
+                    break;
+                }
+                e = e->next;
+            }
+            if (higher_5 == 4){
+                e = firstedge[i];
+                EDGE *list[4];
 
-    printf("e->start: %d, e->end: %d\n", e->start, e->end);
-    extend3(e);
-    write_alpha(outf, 0);
-    printf("extend3 done\n");
+                extend_b(e, list);
+                write_graph6(outf, 0);
 
-    reduce3(e);
-    write_alpha(outf, 0);
-    printf("reduce3 done\n");
-
-    extend4(e, list4);
-    write_alpha(outf, 0);
-    printf("extend4 done\n");
-
-    reduce4(e, list4);
-    write_alpha(outf, 0);
-    printf("reduce4 done\n");
-
-    extend5(e, list5);
-    write_alpha(outf, 0);
-    printf("extend5 done\n");
-
-    reduce5(e, list5);
-    write_alpha(outf, 0);
-    printf("reduce5 done\n");
-
+                reduce_b(e, list);
+                write_graph6(outf, 0);
+                write_alpha(outf, 0);
+            }
+        }
+    }
+    
     exit(EXIT_SUCCESS);   
 }
 

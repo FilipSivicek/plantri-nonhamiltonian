@@ -1,8 +1,5 @@
-/* PLUGIN file to use with plantri.c */
-
 #pragma once
-#include "../plantri.c"
-
+#include "../../plantri.c"
 
 static void extend3(EDGE *e);
 static void extend4(EDGE *e, EDGE *list[]);
@@ -14,14 +11,9 @@ static int canon(int lcolour[], EDGE *can_numberings[][MAXE],
     
 static void write_graph6(FILE *f, int doflip);
 
-static void
-find_extensions(int numb_total, int numb_pres,
-    EDGE *ext3[], int *numext3, 
-    EDGE *ext4[], int *numext4,
-    EDGE *ext5[], int *numext5);
-    
-#define FILTER find_op_b
-static int find_op_b(int nbtot, int nbop, int doflip){
+#define FILTER  multiple_e3_with_e4
+
+static int multiple_e3_with_e4(int nbtot, int nbop, int doflip){
     for (int i = 0; i < nv; i++){
         if (degree[i] == 4){
             int higher_5 = 0;
@@ -37,23 +29,13 @@ static int find_op_b(int nbtot, int nbop, int doflip){
             }
             if (higher_5 == 4){
                 e = firstedge[i];
-                EDGE *list1[4];
-                EDGE *list2[4];
-                EDGE *list3[4];
-
-                write_graph6(outfile, doflip);
-                extend4(e->next, list1);
+                EDGE *list[2];
                 write_graph6(outfile, doflip);
 
-                extend4(e->next->invers->next, list2);
+                extend4(e->next, list);
                 write_graph6(outfile, doflip);
 
-                extend4(e->prev->prev, list3);
-                write_graph6(outfile, doflip);
-
-                reduce4(e->prev->prev, list3);
-                reduce4(e->next->invers->next, list2);
-                reduce4(e->next, list1);
+                reduce4(e->next, list);
                 return TRUE;
             }
         }
