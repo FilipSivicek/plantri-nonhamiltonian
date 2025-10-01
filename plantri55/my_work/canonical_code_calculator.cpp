@@ -26,7 +26,7 @@ int main(){
     int cannon_vertex = n + 1;
     int cannon_edge = m + 1;
     vector<int> real_cannon_code(2 * m + n + 1, 2 * n + 1);
-    // iterate over all begining verticec
+    // iterate over all begining vertices
 
     for (int v = 0; v < n; v++){
         for (int e = 0; e < neigh[v].size(); e++){
@@ -85,6 +85,7 @@ int main(){
                     cannon_vertex = v;
                     cannon_edge = e;
                     real_cannon_code = cannon_code;
+                    break;
                 }
             }
         }
