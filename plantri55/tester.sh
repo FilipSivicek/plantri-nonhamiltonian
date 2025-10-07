@@ -15,8 +15,24 @@ if [ ! -f "./bin/$1" ]; then
     make plantri_$1
 fi
 
+if [ -f "./bin/$1" ]; then
+    program_mod_time_1=$(stat -c %Y ./my_work/$1.c)
+    source_mod_time_1=$(stat -c %Y "./bin/$1")
+    if [[ $program_mod_time_1 -gt $source_mod_time_1 ]]; then
+        make plantri_$1
+    fi
+fi
+
 if [ ! -f "./bin/$2" ]; then
     make plantri_$2
+fi
+
+if [ -f "./bin/$2" ]; then
+    program_mod_time_2=$(stat -c %Y ./my_work/$2.c)
+    source_mod_time_2=$(stat -c %Y "./bin/$2")
+    if [[ $program_mod_time_2 -gt $source_mod_time_2 ]]; then
+        make plantri_$2
+    fi
 fi
 
 if [ ! -d "./output" ]; then
@@ -28,9 +44,9 @@ file2=./output/$2_$3_$4.txt
 ./bin/$1 -$3 $4 $file1
 ./bin/$2 -$3 $4 $file2
 
-for last; do true; done
-
-if [ $last = "diff" ]; then
-    echo "The difference is:"
-    diff $file1 $file2
+if [ $# -gt 4 ]; then
+    if [ $5 = "diff" ]; then
+        echo "The difference is:"
+        diff $file1 $file2
+    fi
 fi

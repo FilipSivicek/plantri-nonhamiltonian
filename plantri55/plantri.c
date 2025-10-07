@@ -296,6 +296,8 @@ typedef struct
 static char *outfilename;  /* name of output file (NULL for stdout) */
 static FILE *outfile;      /* output file for graphs */
 static FILE *msgfile;      /* file for informational messages */
+static FILE *before_extend_file;
+static FILE *after_extend_file;
 
 static int maxnv;          /* order of output graphs */
 static int res,mod;        /* res/mod from command line (default 0/1) */
@@ -7546,6 +7548,9 @@ scansimple(int nbtot, int nbop)
 
     for (i = 0; i < next4; ++i)
     {
+        if (nv == maxnv - 1){
+            write_alpha(before_extend_file, 0);
+        }
         extend4(ext4[i],save_list);
 #ifdef FAST_FILTER_SIMPLE
         if (FAST_FILTER_SIMPLE)
@@ -7569,7 +7574,11 @@ scansimple(int nbtot, int nbop)
                 if (nb < nblim) scansimple(xnbtot,xnbop); 
             }
         }
-        reduce4(ext4[i],save_list); 
+
+        reduce4(ext4[i],save_list);
+        if (nv == maxnv - 1){
+            write_alpha(after_extend_file, 0);
+        }
     }
 
     for (i = 0; i < next5; ++i) 
@@ -20234,6 +20243,7 @@ get_graph_from_file(void)
 
     FILE* outf = fopen("result.txt", "w");
     
+    write_graph6(outf, 0);
     write_alpha(outf, 0);
     printf("initialization done\n");
     
@@ -20551,8 +20561,8 @@ main(int argc, char *argv[])
     minpolydeg = -1;
     minpolyconnec = -1;
 
-    FILE *beginning_edges = fopen("begginning_edges.txt", "w");
-    edge_printer(beginning_edges);
+    before_extend_file = fopen("before_ext.txt", "w");
+    after_extend_file = fopen("after_ext.txt", "w");
 
     if (pswitch && bswitch)                     bipartite_dispatch();
     else if (Fswitch)                           get_graph_from_file();
