@@ -12,10 +12,6 @@ all: plantri fullgen
 tools: plantri_nft plantri_adj4 plantri_maxd plantri_mdcount plantri_ad \
        plantri_deg plantri_fo pccat
 
-plantri_my: plantri_contains_clique_n plantri_contains_clique_n2 plantri_contains_clique_n4 \
-	plantri_is_eulerian plantri_not_simple plantri_contains_hamilton plantri_contains_hamilton_not_checking \
-        plantri_contains_hamilton_UF_5 plantri_only_mirror_symetries plantri_no_symetry
-
 plantri: plantri.c
 	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS}
 
@@ -167,10 +163,9 @@ GP2=gadgets_priority_v2
 plantri_${GP2}: plantri.c ./${MY_DIRECTORY}/${GP2}.c
 	${CC} -o ./bin/${GP2} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP2}.c"' plantri.c ${LDFLAGS} -ggdb3
 
-GP2.1=gadgets_priority_v2.1
-plantri_${GP2.1}: plantri.c ./${MY_DIRECTORY}/${GP2.1}.c
-	${CC} -o ./bin/${GP2.1} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP2.1}.c"' plantri.c ${LDFLAGS} -ggdb3
-
+GP3=gadgets_priority_v3
+plantri_${GP3}: plantri.c ./${MY_DIRECTORY}/${GP3}.c
+	${CC} -o ./bin/${GP3} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP3}.c"' plantri.c ${LDFLAGS} -ggdb3
 
 NL=no_ladder
 plantri_${NL}: plantri.c ./${MY_DIRECTORY}/${NL}.c
