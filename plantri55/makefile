@@ -172,6 +172,10 @@ plantri_${GP2.1}: plantri.c ./${MY_DIRECTORY}/${GP2.1}.c
 	${CC} -o ./bin/${GP2.1} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP2.1}.c"' plantri.c ${LDFLAGS} -ggdb3
 
 
+NL=no_ladder
+plantri_${NL}: plantri.c ./${MY_DIRECTORY}/${NL}.c
+	${CC} -o ./bin/${NL} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${NL}.c"' plantri.c ${LDFLAGS} -ggdb3
+
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
 
