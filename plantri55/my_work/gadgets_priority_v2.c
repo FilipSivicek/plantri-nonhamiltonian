@@ -400,26 +400,17 @@ static int gadgets_priority(int nbtot, int nbop, int doflip){
     for (int i = 0; i < nv; i++) rcolour2[i] = 100 + degree[i]; // 100 is more than MAXN and it is quicker to calculate degree
     
     testcanon_first_init(firstedge[0], rep2, rcolour);
-    my_testcanon_init_v3(firstedge[0], rep3, rcolour2);
     for (int i = 0; i < nv; i++){
         EDGE *e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
             testcanon_init(e, rep2, rcolour);  
-            testcanon_mirror_init(e, rep2, rcolour);      
-            my_testcanon_init_v3(e, rep3, rcolour2);
+            testcanon_mirror_init(e, rep2, rcolour);
             e = e->next;
         }
     }
 
     int res = priority_calculator_v2(rep2, nv);
     if (res >= 0){
-        EDGE *list[2];
-        fprintf(outfile, "gadget: %d\n", res);
-        fprintf(outfile, "rep2: ");
-        rep_printer(rep2, nv);
-        
-        fprintf(outfile, "rep4: ");
-        rep_printer(rep3, nv);
         return TRUE;
     }
 

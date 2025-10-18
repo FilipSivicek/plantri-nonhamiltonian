@@ -1,11 +1,6 @@
 #pragma once
 #include "../plantri.c"
 
-static void testcanon_first_init(EDGE *givenedge, int representation[], int colour[]);
-static int testcanon_init(EDGE *givenedge, int representation[], int colour[]);
-static int testcanon_mirror_init(EDGE *givenedge, int representation[], int colour[]);
-static void write_alpha(FILE *f, int doflip);
-
 static void rep_printer(int code[], int num_v){
     int index = 0;
     int num_vert = 0;
@@ -19,41 +14,42 @@ static void rep_printer(int code[], int num_v){
     fprintf(outfile, "\n");
 }
 
-static int my_testcanon_init_v3(EDGE *givenedge, int representation[], int colour[]){
-    if (colour[givenedge->start] > (*representation)){
+
+// fixed colouring. colour[i] = degree[i] + MAXN
+static int my_testcanon_init_v3(EDGE *givenedge, int representation[]){
+    if (degree[givenedge->start] + MAXN > (*representation)){
         return 0;
     }
     
     register EDGE *run;
     register int vertex;
-    EDGE *temp;  
     EDGE *startedge[MAXN+1]; 
-    int number[MAXN], i, j; 
+    int number[MAXN], i, j, dgr; 
     int better = 0; /* is the representation already better? */
-    int last_number;
+    int last_number = 1;
 
     for (i = 0; i < nv; i++) number[i] = 0;
 
     number[givenedge->start] = 1; 
-    last_number = 1;
+    startedge[0] = givenedge;
     startedge[1] = givenedge->invers;
 
-    if (colour[givenedge->start] < (*representation)){
+    if (degree[givenedge->start] + MAXN < (*representation)){
         better = 1;
-        *representation = colour[givenedge->start];
+        *representation = degree[givenedge->start] + MAXN;
     }
     representation++;
     
-    temp = givenedge;
     for(i = 0; i < nv; i++){
-        run = temp;
-        for (j = 0; j < degree[temp->start]; j++){
+        run = startedge[i];
+        dgr = degree[run->start];
+        for (j = 0; j < dgr; j++){
             vertex = number[run->end];
             if (!vertex){
                 startedge[last_number] = run->invers;
                 last_number++;
                 number[run->end] = last_number;
-                vertex = colour[run->end];
+                vertex = degree[run->end] + MAXN;
             }
 
             if (vertex < *representation){
@@ -76,7 +72,7 @@ static int my_testcanon_init_v3(EDGE *givenedge, int representation[], int colou
                     last_number++;
                     number[run->invers->next->next->end] = last_number;
 
-                    vertex = colour[run->invers->next->next->end];
+                    vertex = degree[run->invers->next->next->end] + MAXN;
                     if (vertex < *representation){
                         better = 1;
                     }
@@ -104,7 +100,6 @@ static int my_testcanon_init_v3(EDGE *givenedge, int representation[], int colou
         }
 
         representation++;
-        temp = startedge[i + 1];
     }
 
     if (better){
@@ -114,41 +109,40 @@ static int my_testcanon_init_v3(EDGE *givenedge, int representation[], int colou
     return 1;
 }
 
-static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[], int colour[]){
-    if (colour[givenedge->start] > (*representation)){
+static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[]){
+    if (degree[givenedge->start] + MAXN > (*representation)){
         return 0;
     }
     
     register EDGE *run;
     register int vertex;
-    EDGE *temp;  
     EDGE *startedge[MAXN+1]; 
-    int number[MAXN], i, j; 
+    int number[MAXN], i, j, dgr; 
     int better = 0; /* is the representation already better? */
-    int last_number;
+    int last_number = 1;
 
     for (i = 0; i < nv; i++) number[i] = 0;
 
     number[givenedge->start] = 1; 
-    last_number = 1;
+    startedge[0] = givenedge;
     startedge[1] = givenedge->invers;
 
-    if (colour[givenedge->start] < (*representation)){
+    if (degree[givenedge->start] + MAXN < (*representation)){
         better = 1;
-        *representation = colour[givenedge->start];
+        *representation = degree[givenedge->start] + MAXN;
     }
     representation++;
     
-    temp = givenedge;
     for(i = 0; i < nv; i++){
-        run = temp;
-        for (j = 0; j < degree[temp->start]; j++){
+        run = startedge[i];
+        dgr = degree[run->start];
+        for (j = 0; j < dgr; j++){
             vertex = number[run->end];
             if (!vertex){
                 startedge[last_number] = run->invers;
                 last_number++;
                 number[run->end] = last_number;
-                vertex = colour[run->end];
+                vertex = degree[run->end] + MAXN;
             }
 
             if (vertex < *representation){
@@ -171,7 +165,7 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[], in
                     last_number++;
                     number[run->invers->prev->prev->end] = last_number;
 
-                    vertex = colour[run->invers->prev->prev->end];
+                    vertex = degree[run->invers->prev->prev->end] + MAXN;
                     if (vertex < *representation){
                         better = 1;
                     }
@@ -199,7 +193,6 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[], in
         }
 
         representation++;
-        temp = startedge[i + 1];
     }
 
     if (better){
@@ -211,10 +204,10 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[], in
 
 static int priority_calculator_v3(int code[], int num_v){
     // vertices are index from 1
-    int seq[num_v + 1];
     
     int index = 1;
     if (num_v >= 9) num_v = 9;
+    int seq[num_v + 1];
 
     for (int curr = 1; curr <= num_v; curr++){
         int edge = 0;
@@ -237,40 +230,42 @@ static int priority_calculator_v3(int code[], int num_v){
         // A, B, C, D, E, F
         if (seq[2] == 5 && seq[3] == 5){
             // A, B
-            if (seq[4] == 4){
+            if (seq[4] == 4 && seq[6] >= 6 && seq[8] >= 6){
                 // A
-                if (seq[5] == 5 && seq[6] >= 6 && seq[7] >= 5 && seq[8] >= 6 && seq[9] >= 4){
+                if (seq[5] == 5 && seq[7] >= 5 && seq[9] >= 4){
                     return 0;
                 }
                 // B
-                if (seq[5] >= 6 && seq[6] >= 6 && seq[7] >= 6 && seq[8] >= 6){
+                if (seq[5] >= 6 && seq[7] >= 6){
                     return 1;
                 }
             }
 
             // C, D 
-            if (seq[4] == 5){
-                // D
-                if (seq[5] >= 6 && seq[6] >= 4){
-                    // D
-                    if (seq[7] >= 5 && seq[8] >= 5 && seq[9] >= 4){
-                        return 3;
-                    }
+            if (seq[4] == 5 && seq[7] >= 5 && seq[8] >= 5){
+                // C
+                if (seq[5] == 5 && seq[6] >= 5 && seq[9] >= 5){
+                    return 2;
                 }
 
-                // C
-                if (seq[5] == 5){
-                    if (seq[6] >= 5 && seq[7] >= 5 && seq[8] >= 5 && seq[9] >= 5){
-                        return 2;
-                    }
+                // D
+                if (seq[5] >= 6 && seq[6] >= 4 && seq[9] >= 4){
+                    return 3;
                 }
+
             }
 
             // E, F
             if (seq[4] >= 6 && seq[5] >= 6){
                 // E
-                if (seq[6] >= 5 && seq[7] == 5 && seq[8] >= 4){
-                    return 4;
+                if (seq[7] == 5){
+                    if (seq[6] >= 4 && seq[8] >= 5){
+                        return 4;
+                    }
+
+                    if (seq[6] >= 5 && seq[8] >= 4){
+                        return 4;
+                    } 
                 }
 
                 // F
@@ -300,42 +295,23 @@ static int priority_calculator_v3(int code[], int num_v){
 
 static int gadgets_priority(int nbtot, int nbop, int doflip){
     // create code
-    int rep[MAXE + MAXN];
-    int rep2[MAXE + MAXN];
-
-    int rep3[MAXE + MAXN];
-    for (int i = 0; i < MAXE + MAXN; i++) {
-        rep2[i] = MAXE + MAXN;
+    int rep3[MAXE + MAXN + 2];
+    for (int i = 0; i < MAXE + MAXN + 2; i++) {
         rep3[i] = MAXE + MAXN;
     }
     
-    int rcolour[nv];
-    for (int i = 0; i < nv; i++) rcolour[i] = MAXN + 1;
-    
-    int rcolour2[nv];
-    for (int i = 0; i < nv; i++) rcolour2[i] = 100 + degree[i]; // 100 is more than MAXN and it is quicker to calculate degree
-    
-    testcanon_first_init(firstedge[0], rep2, rcolour);
-    my_testcanon_init_v3(firstedge[0], rep3, rcolour2);
+    my_testcanon_init_v3(firstedge[0], rep3);
     for (int i = 0; i < nv; i++){
         EDGE *e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
-            testcanon_init(e, rep2, rcolour);        
-            my_testcanon_init_v3(e, rep3, rcolour2);
-            my_testcanon_init_mirror_v3(e, rep3, rcolour2);
+            my_testcanon_init_v3(e, rep3);
+            my_testcanon_init_mirror_v3(e, rep3);
             e = e->next;
         }
     }
 
     int res = priority_calculator_v3(rep3, nv);
     if (res >= 0){
-        EDGE *list[2];
-        fprintf(outfile, "gadget: %d\n", res);
-        fprintf(outfile, "rep2: ");
-        rep_printer(rep2, nv);
-        
-        fprintf(outfile, "rep4: ");
-        rep_printer(rep3, nv);
         return TRUE;
     }
 

@@ -2,10 +2,10 @@ CC=gcc
 CFLAGS= 
 LDFLAGS=
 VERSION=55
-MY_DIRECTORY=my_work
+MY_WORK=my_work
 HAMILTON=contains_hamilton
 CLIQUE=contains_clique
-OPB_DIR=${MY_DIRECTORY}/operation_b
+OPB_DIR=${MY_WORK}/operation_b
 
 all: plantri fullgen
 
@@ -54,82 +54,82 @@ plantri_fo: plantri.c faceorbits.c
 plantri_min5: plantri.c
 	echo "plantri_min5 is obsolete.  Use plantri -m5."
 
-plantri_speed_test: plantri.c ./${MY_DIRECTORY}/speed_test.c
-	${CC} -o ./bin/speed_test ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/speed_test.c"' \
+plantri_speed_test: plantri.c ./${MY_WORK}/speed_test.c
+	${CC} -o ./bin/speed_test ${CFLAGS} '-DPLUGIN="./${MY_WORK}/speed_test.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_is_eulerian: plantri.c ./${MY_DIRECTORY}/is_eulerian.c
-	${CC} -o ./bin/is_eulerian ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/is_eulerian.c"' \
+plantri_is_eulerian: plantri.c ./${MY_WORK}/is_eulerian.c
+	${CC} -o ./bin/is_eulerian ${CFLAGS} '-DPLUGIN="./${MY_WORK}/is_eulerian.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n4: plantri.c ./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n4.c
-	${CC} -o ./bin/contains_clique_n4 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n4.c"' \
+plantri_contains_clique_n4: plantri.c ./${MY_WORK}/${CLIQUE}/contains_clique_n4.c
+	${CC} -o ./bin/contains_clique_n4 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${CLIQUE}/contains_clique_n4.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n2: plantri.c ./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n2.c
-	${CC} -o ./bin/contains_clique_n2 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n2.c"' \
+plantri_contains_clique_n2: plantri.c ./${MY_WORK}/${CLIQUE}/contains_clique_n2.c
+	${CC} -o ./bin/contains_clique_n2 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${CLIQUE}/contains_clique_n2.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n: plantri.c ./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n.c
-	${CC} -o ./bin/contains_clique_n ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n.c"' \
+plantri_contains_clique_n: plantri.c ./${MY_WORK}/${CLIQUE}/contains_clique_n.c
+	${CC} -o ./bin/contains_clique_n ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${CLIQUE}/contains_clique_n.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_clique_n_wa: plantri.c ./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n_wa.c
-	${CC} -o ./bin/contains_clique_n_wa ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${CLIQUE}/contains_clique_n_wa.c"' \
+plantri_contains_clique_n_wa: plantri.c ./${MY_WORK}/${CLIQUE}/contains_clique_n_wa.c
+	${CC} -o ./bin/contains_clique_n_wa ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${CLIQUE}/contains_clique_n_wa.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_not_simple: plantri.c ./${MY_DIRECTORY}/not_simple.c
-	${CC} -o ./bin/not_simple ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/not_simple.c"' \
+plantri_not_simple: plantri.c ./${MY_WORK}/not_simple.c
+	${CC} -o ./bin/not_simple ${CFLAGS} '-DPLUGIN="./${MY_WORK}/not_simple.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_not_simple_standard: plantri.c ./${MY_DIRECTORY}/not_simple_standard.c
-	${CC} -o ./bin/not_simple_standard ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/not_simple_standard.c"' \
+plantri_not_simple_standard: plantri.c ./${MY_WORK}/not_simple_standard.c
+	${CC} -o ./bin/not_simple_standard ${CFLAGS} '-DPLUGIN="./${MY_WORK}/not_simple_standard.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_self_edge: plantri.c ./${MY_DIRECTORY}/self_edge.c
-	${CC} -o ./bin/self_edge ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/self_edge.c"' \
+plantri_self_edge: plantri.c ./${MY_WORK}/self_edge.c
+	${CC} -o ./bin/self_edge ${CFLAGS} '-DPLUGIN="./${MY_WORK}/self_edge.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton.c
-	${CC} -o ./bin/contains_hamilton ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton.c"' \
+plantri_contains_hamilton: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton.c
+	${CC} -o ./bin/contains_hamilton ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_not_checking: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_not_checking.c
-	${CC} -o ./bin/contains_hamilton_not_checking ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_not_checking.c"' \
+plantri_contains_hamilton_not_checking: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_not_checking.c
+	${CC} -o ./bin/contains_hamilton_not_checking ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_not_checking.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_ultra_checking: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_ultra_checking.c
-	${CC} -o ./bin/contains_hamilton_ultra_checking ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_ultra_checking.c"' \
+plantri_contains_hamilton_ultra_checking: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_ultra_checking.c
+	${CC} -o ./bin/contains_hamilton_ultra_checking ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_ultra_checking.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_UF_1: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_1.c
-	${CC} -o ./bin/contains_hamilton_UF_1 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_1.c"' \
+plantri_contains_hamilton_UF_1: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_1.c
+	${CC} -o ./bin/contains_hamilton_UF_1 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_1.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_UF_2: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_2.c
-	${CC} -o ./bin/contains_hamilton_UF_2 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_2.c"' \
+plantri_contains_hamilton_UF_2: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_2.c
+	${CC} -o ./bin/contains_hamilton_UF_2 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_2.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_UF_3: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_3.c
-	${CC} -o ./bin/contains_hamilton_UF_3 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_3.c"' \
+plantri_contains_hamilton_UF_3: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_3.c
+	${CC} -o ./bin/contains_hamilton_UF_3 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_3.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_UF_4: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_4.c
-	${CC} -o ./bin/contains_hamilton_UF_4 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_4.c"' \
+plantri_contains_hamilton_UF_4: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_4.c
+	${CC} -o ./bin/contains_hamilton_UF_4 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_4.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_contains_hamilton_UF_5: plantri.c ./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_5.c
-	${CC} -o ./bin/contains_hamilton_UF_5 ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${HAMILTON}/contains_hamilton_UF_5.c"' \
+plantri_contains_hamilton_UF_5: plantri.c ./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_5.c
+	${CC} -o ./bin/contains_hamilton_UF_5 ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${HAMILTON}/contains_hamilton_UF_5.c"' \
 		plantri.c ${LDFLAGS}
 
-plantri_no_symetry: plantri.c ./${MY_DIRECTORY}/no_symetry.c
-	${CC} -o ./bin/no_symetry ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/no_symetry.c"' plantri.c ${LDFLAGS}
+plantri_no_symetry: plantri.c ./${MY_WORK}/no_symetry.c
+	${CC} -o ./bin/no_symetry ${CFLAGS} '-DPLUGIN="./${MY_WORK}/no_symetry.c"' plantri.c ${LDFLAGS}
 
-plantri_only_mirror_symetries: plantri.c ./${MY_DIRECTORY}/only_mirror_symetries.c
-	${CC} -o ./bin/only_mirror_symetries ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/only_mirror_symetries.c"' plantri.c ${LDFLAGS}
+plantri_only_mirror_symetries: plantri.c ./${MY_WORK}/only_mirror_symetries.c
+	${CC} -o ./bin/only_mirror_symetries ${CFLAGS} '-DPLUGIN="./${MY_WORK}/only_mirror_symetries.c"' plantri.c ${LDFLAGS}
 
-plantri_scansimple_my: plantri.c ./${MY_DIRECTORY}/scansimple_my.c
-	${CC} -o ./bin/scansimple_my ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/scansimple_my.c"' plantri.c ${LDFLAGS} -ggdb3
+plantri_scansimple_my: plantri.c ./${MY_WORK}/scansimple_my.c
+	${CC} -o ./bin/scansimple_my ${CFLAGS} '-DPLUGIN="./${MY_WORK}/scansimple_my.c"' plantri.c ${LDFLAGS} -ggdb3
 
 plantri_operation_b: plantri.c ./${OPB_DIR}/operation_b.c
 	${CC} -o ./bin/operation_b ${CFLAGS} '-DPLUGIN="./${OPB_DIR}/operation_b.c"' plantri.c ${LDFLAGS} -ggdb3
@@ -152,24 +152,28 @@ plantri_multiple_e4: plantri.c ./${OPB_DIR}/multiple_e4.c
 plantri_operation_b_with_looking_for_edges: plantri.c ./${OPB_DIR}/operation_b_with_looking_for_edges.c
 	${CC} -o ./bin/operation_b_with_looking_for_edges ${CFLAGS} '-DPLUGIN="./${OPB_DIR}/operation_b_with_looking_for_edges.c"' plantri.c ${LDFLAGS} -ggdb3
 
-plantri_max_degree: plantri.c ./${MY_DIRECTORY}/max_degree.c
-	${CC} -o ./bin/max_degree ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/max_degree.c"' plantri.c ${LDFLAGS} -ggdb3
+plantri_max_degree: plantri.c ./${MY_WORK}/max_degree.c
+	${CC} -o ./bin/max_degree ${CFLAGS} '-DPLUGIN="./${MY_WORK}/max_degree.c"' plantri.c ${LDFLAGS} -ggdb3
 
 GP=gadgets_priority
-plantri_${GP}: plantri.c ./${MY_DIRECTORY}/${GP}.c
-	${CC} -o ./bin/${GP} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP}.c"' plantri.c ${LDFLAGS} -ggdb3
+plantri_${GP}: plantri.c ./${MY_WORK}/${GP}.c
+	${CC} -o ./bin/${GP} ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${GP}.c"' plantri.c ${LDFLAGS} -ggdb3
 
 GP2=gadgets_priority_v2
-plantri_${GP2}: plantri.c ./${MY_DIRECTORY}/${GP2}.c
-	${CC} -o ./bin/${GP2} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP2}.c"' plantri.c ${LDFLAGS} -ggdb3
+plantri_${GP2}: plantri.c ./${MY_WORK}/${GP2}.c
+	${CC} -o ./bin/${GP2} ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${GP2}.c"' plantri.c ${LDFLAGS} -ggdb3
 
 GP3=gadgets_priority_v3
-plantri_${GP3}: plantri.c ./${MY_DIRECTORY}/${GP3}.c
-	${CC} -o ./bin/${GP3} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${GP3}.c"' plantri.c ${LDFLAGS} -ggdb3
+plantri_${GP3}: plantri.c ./${MY_WORK}/${GP3}.c
+	${CC} -o ./bin/${GP3} ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${GP3}.c"' plantri.c ${LDFLAGS} -ggdb3
 
 NL=no_ladder
-plantri_${NL}: plantri.c ./${MY_DIRECTORY}/${NL}.c
-	${CC} -o ./bin/${NL} ${CFLAGS} '-DPLUGIN="./${MY_DIRECTORY}/${NL}.c"' plantri.c ${LDFLAGS} -ggdb3
+plantri_${NL}: plantri.c ./${MY_WORK}/${NL}.c
+	${CC} -o ./bin/${NL} ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${NL}.c"' plantri.c ${LDFLAGS} -ggdb3
+
+MP=my_plantri
+my_plantri: ${MY_WORK}/${MP}
+	${CC} -o ${MP} ${CFLAGS} ${MY_WORK}/${MP}.c ${LDFLAGS}
 
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
