@@ -24,43 +24,26 @@ static int input_n;
 static int total_graphs = 0;
 static EDGE *first_edge[MAXN];
 
+static EDGE prepared_edges3[6 * MAXN];
+static EDGE prepared_edges4[8 * MAXN];
+static EDGE prepared_edges5[10 * MAXN];
+
 static void edge_printer(EDGE *e){
     printf("start = %d, end = %d\n", e->start, e->end);
 }
 
-static void init_k4(){
-    static EDGE init_e[4][3];
-    for (int i = 0; i < 4; i++){
-        for (int j = 0 ; j < 3; j++){
-            init_e[i][j] = (EDGE){i, j + (j >= i), NULL, NULL, NULL};
+static void print_graph(){
+    for (int i = 0; i < nv; i++){
+        printf("degree[%d] = %d\n", i, degree[i]);
+        EDGE *e = first_edge[i];
+        for (int j = 0; j < degree[i]; j++){
+            printf("e: ");
+            edge_printer(e);
+            printf("e->invers: ");
+            edge_printer(e->invers);
+            e = e->next;
         }
     }
-
-    for (int i = 0; i < 4; i++){
-        for (int j = 0; j < 3; j++){
-            if (i%2 == 0){
-                init_e[i][j].next = &init_e[i][(j+1)%3];
-                init_e[i][j].prev = &init_e[i][(j+2)%3];
-            }
-            else {
-                init_e[i][j].prev = &init_e[i][(j+1)%3];
-                init_e[i][j].next = &init_e[i][(j+2)%3];
-            }
-        }
-    }
-    for (int i = 0; i < 4; i++){
-        for (int j = 0; j < 3; j++){
-            init_e[i][j].invers = &init_e[init_e[i][j].end][init_e[i][j].start - (j < i)];
-        }
-    }
-    for (int i = 0; i < 4; i++){
-        first_edge[i] = &init_e[i][0];
-        degree[i] = 3;
-    }
-
-    nv = 4;
-    ne = 12;
-    return;
 }
 
 static void
@@ -116,12 +99,13 @@ compute_code(unsigned char code[])
     while (last_number < nv)
     {   *code=number[temp->end]; code++;
         for (run = temp->next; run != temp; run = run->next)
-          { vertex = run->end;
+          {
+            vertex = run->end;
             if (!number[vertex])
               { startedge[last_number] = run->invers;
                 last_number++; number[vertex] = last_number; 
                 *code = last_number; }
-            else *code = number[vertex]; 
+            else *code = number[vertex];
             code++;
           }
         *code = 0;  code++;
@@ -246,7 +230,7 @@ write_graph6(FILE *f, int doflip)
 
 /* Write in graph6 format.  doflip is ignored. */
 {
-    unsigned char code[MAXN+MAXE+1];
+    unsigned char code[MAXN+MAXE+10];
 
     compute_code(code);
     write_code_as_graph6(f,code);
@@ -413,8 +397,337 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[]){
     return 1;
 }
 
-static void my_scan_simple(){
-    if (nv == input_n){
+static void init_k4(){
+    static EDGE init_e[4][3];
+    for (int i = 0; i < 4; i++){
+        for (int j = 0 ; j < 3; j++){
+            init_e[i][j] = (EDGE){i, j + (j >= i), NULL, NULL, NULL};
+        }
+    }
+
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 3; j++){
+            if (i%2 == 0){
+                init_e[i][j].next = &init_e[i][(j+1)%3];
+                init_e[i][j].prev = &init_e[i][(j+2)%3];
+            }
+            else {
+                init_e[i][j].prev = &init_e[i][(j+1)%3];
+                init_e[i][j].next = &init_e[i][(j+2)%3];
+            }
+        }
+    }
+
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 3; j++){
+            init_e[i][j].invers = &init_e[init_e[i][j].end][init_e[i][j].start - (j < i)];
+        }
+    }
+
+    for (int i = 0; i < 4; i++){
+        first_edge[i] = &init_e[i][0];
+        degree[i] = 3;
+    }
+
+    // init prepared_edges
+    for (int i = 0; i < 6 * input_n; i++){
+        prepared_edges3[i] = (EDGE){0, 0, NULL, NULL, NULL};
+    }
+
+    for (int i = 0; i < 8 * input_n; i++){
+        prepared_edges4[i] = (EDGE){0, 0, NULL, NULL, NULL};
+    }
+
+    for (int i = 0; i < 10 * input_n; i++){
+        prepared_edges5[i] = (EDGE){0, 0, NULL, NULL, NULL};
+    }
+
+    nv = 4;
+    ne = 12;
+    return;
+}
+
+static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN], int *num_ext4, EDGE* ext5[MAXN], int *num_ext5){
+    // finding threes
+    int k = 0;
+    for (int i = 0; i < nv; i++){
+        EDGE *e = first_edge[i];
+        for (int j = 0; j < degree[i]; j++){
+            if (e->start < e->end && e->start < e->next->end){
+                ext3[k] = e;
+                k++;
+            }
+            e = e->next;
+        }
+    }
+    *num_ext3 = k;
+
+    // finding fours
+    k = 0;
+    for (int i = 0; i < nv; i++){
+        EDGE *e = first_edge[i];
+        for (int j = 0; j < degree[i]; j++){
+            if (e->start < e->next->end){
+                ext4[k] = e;
+                k++;
+            }
+            e = e->next;
+        }
+    }
+    *num_ext4 = k;
+
+    // finding fives
+    k = 0;
+    for (int i = 0; i < nv; i++){
+        EDGE *e = first_edge[i];
+        if (degree[i] > 3){
+            for (int j = 0; j < degree[i]; j++){
+                ext5[k] = e;
+                k++;
+                e = e->next;
+            }
+        }
+    }
+    *num_ext5 = k;
+}
+
+static void my_ext3(EDGE *e){
+    int incident_v[3] = {e->start, e->next->end, e->end};
+    for (int i = 0; i < 3; i++){
+        prepared_edges3[6 * nv + i].start = nv;
+        prepared_edges3[6 * nv + i].end = incident_v[i];
+        prepared_edges3[6 * nv + i].next = &prepared_edges3[6 * nv + (i + 2) % 3];
+        prepared_edges3[6 * nv + i].prev = &prepared_edges3[6 * nv + (i + 1) % 3];
+        prepared_edges3[6 * nv + i].invers = &prepared_edges3[6 * nv + i + 3];
+    }
+
+    for (int i = 0; i < 3; i++){
+        degree[e->start]++;
+        prepared_edges3[6 * nv + i + 3].start = e->start;
+        prepared_edges3[6 * nv + i + 3].end = nv;
+        prepared_edges3[6 * nv + i + 3].next = e->next;
+        prepared_edges3[6 * nv + i + 3].prev = e;
+        prepared_edges3[6 * nv + i + 3].invers = &prepared_edges3[6 * nv + i];
+
+        e->next->prev = &prepared_edges3[6 * nv + i + 3];
+        e->next = &prepared_edges3[6 * nv + i + 3];
+        e = e->next->next->invers;
+    }
+    
+    first_edge[nv] = &prepared_edges3[6 * nv];
+    degree[nv] = 3;
+    nv++;
+    ne += 6;
+}
+
+static void my_reduce3(EDGE *e){
+    EDGE *run = e;
+    for (int i = 0; i < 3; i++){
+        degree[e->start]--;
+        run = e->next->next->invers;
+        e->next->next->prev = e;
+        e->next = e->next->next;
+        e = run;
+    }
+
+    nv--;
+    ne -= 6;
+}
+
+static void my_ext4(EDGE* e, EDGE* list[]){
+    list[0] = e->next;
+    list[1] = e->next->invers;
+    int incident_v[4] = {e->start,e->next->next->end, e->next->end, e->end};
+    for (int i = 0; i < 4; i++){
+        prepared_edges4[8 * nv + i].start = nv;
+        prepared_edges4[8 * nv + i].end = incident_v[i];
+        prepared_edges4[8 * nv + i].next = &prepared_edges4[8 * nv + (i + 3) % 4];
+        prepared_edges4[8 * nv + i].prev = &prepared_edges4[8 * nv + (i + 1) % 4];
+        prepared_edges4[8 * nv + i].invers = &prepared_edges4[8 * nv + i + 4];
+    }
+
+    degree[e->end]++;
+    degree[e->next->next->end]++;
+    EDGE *helper = e->next->invers->prev;
+
+    e->next->next->prev = e;
+    e->next = e->next->next;
+
+    helper->next->next->prev = helper;
+    helper->next = helper->next->next;
+
+    for (int i = 0; i < 4; i++){
+        first_edge[e->start] = e;
+        prepared_edges4[8 * nv + i + 4].start = e->start;
+        prepared_edges4[8 * nv + i + 4].end = nv;
+        prepared_edges4[8 * nv + i + 4].next = e->next;
+        prepared_edges4[8 * nv + i + 4].prev = e;
+        prepared_edges4[8 * nv + i + 4].invers = &prepared_edges4[8 * nv + i];
+
+        e->next->prev = &prepared_edges4[8 * nv + i + 4];
+        e->next = &prepared_edges4[8 * nv + i + 4];
+        e = e->next->next->invers;
+    }
+    first_edge[nv] = &prepared_edges4[8 * nv];
+    
+    degree[nv] = 4;
+    nv++;
+    ne += 8;
+}
+
+static void my_reduce4(EDGE* e, EDGE* list[]){
+    EDGE *run = e;
+    for (int i = 0; i < 4; i++){
+        first_edge[e->start] = e;
+        run = e->next->next->invers;
+        e->next->next->prev = e;
+        e->next = e->next->next;
+        e = run;
+    }
+    
+    EDGE *helper = e->next->invers->next->invers;
+    e->next->prev = list[0];
+    e->next = list[0];
+
+    helper->next->prev = list[1];
+    helper->next = list[1];
+
+    degree[e->end]--;
+    degree[e->next->next->end]--;
+    nv--;
+    ne -= 8;
+}
+
+void my_ext5(EDGE *e, EDGE* list[]){
+    list[0] = e->next;
+    list[1] = e->next->invers;
+    list[2] = e->next->next;
+    list[3] = e->next->next->invers;
+
+    int incident_v[5] = {e->start,e->next->next->next->end, e->next->next->end, e->next->end, e->end};
+    for (int i = 0; i < 5; i++){
+        prepared_edges5[10 * nv + i].start = nv;
+        prepared_edges5[10 * nv + i].end = incident_v[i];
+        prepared_edges5[10 * nv + i].next = &prepared_edges5[10 * nv + (i + 4) % 5];
+        prepared_edges5[10 * nv + i].prev = &prepared_edges5[10 * nv + (i + 1) % 5];
+        prepared_edges5[10 * nv + i].invers = &prepared_edges5[10 * nv + i + 5];
+    }
+
+    degree[incident_v[4]]++;
+    degree[incident_v[1]]++;
+    degree[e->start]--;
+
+    e->next->next->next->prev = e;
+    e->next = e->next->next->next;
+    
+    EDGE *helper = e->invers->prev->invers;
+    helper->prev->prev->next = helper;
+    helper->prev = helper->prev->prev;
+    helper = helper->prev->invers;
+
+    helper->prev->prev->next = helper;
+    helper->prev = helper->prev->prev;
+
+    for (int i = 0; i < 5; i++){
+        first_edge[e->start] = e;
+        prepared_edges5[10 * nv + i + 5].start = e->start;
+        prepared_edges5[10 * nv + i + 5].end = nv;
+        prepared_edges5[10 * nv + i + 5].next = e->next;
+        prepared_edges5[10 * nv + i + 5].prev = e;
+        prepared_edges5[10 * nv + i + 5].invers = &prepared_edges5[10 * nv + i];
+
+        e->next->prev = &prepared_edges5[10 * nv + i + 5];
+        e->next = &prepared_edges5[10 * nv + i + 5];
+        e = e->next->next->invers;
+    }
+    first_edge[nv] = &prepared_edges5[10 * nv];
+    
+    degree[nv] = 5;
+    nv++;
+    ne += 10;
+}
+
+void my_reduce5(EDGE *e, EDGE *list[]){
+    EDGE *run = e;
+    for (int i = 0; i < 5; i++){
+        first_edge[e->start] = e;
+        run = e->next->next->invers;
+        e->next->next->prev = e;
+        e->next = e->next->next;
+        e = run;
+    }
+    
+    EDGE *helper = e->invers->prev->invers;
+    e->next->prev = list[2];
+    e->next = list[0];
+
+    helper->prev->next = list[1];
+    helper->prev = list[1];
+
+    helper = helper->prev->prev->invers;
+
+    helper->prev->next = list[3];
+    helper->prev = list[3];
+
+    degree[e->end]--;
+    degree[e->next->next->next->end]--;
+    degree[e->start]++;
+    nv--;
+    ne -= 8;
+}
+
+static int compute_vert_numb(EDGE *e){
+    int ans = e->end * MAXN + e->prev->end;
+    int helper;
+    for (int i = 0; i < degree[e->start]; i++){
+        helper = e->end * MAXN + e->prev->end;
+        if (helper < ans){
+            ans = helper;
+        }
+        e = e->next;
+    }
+
+    return ans;
+}
+
+static int is_canon(EDGE *father){
+    int repr[MAXN + MAXE];
+    for (int i = 0; i < MAXN + MAXE; i++) repr[i] = MAXN + MAXE;
+
+    EDGE *e = first_edge[nv - 1];
+    for (int i = 0; i < degree[nv - 1]; i++){
+        my_testcanon_init_v3(e, repr);
+        my_testcanon_init_mirror_v3(e, repr);
+        e = e->next;
+    }
+
+    int vert_numb = father->start * MAXN + father->end;
+
+    for (int i = 0; i < nv; i++){
+        e = first_edge[i];
+        for (int j = 0; j < degree[i]; j++){
+            int tc = my_testcanon_init_v3(e, repr);
+            int tcm = my_testcanon_init_mirror_v3(e, repr);
+            if (tcm > tc){
+                tc = tcm;
+            }
+            if (tc){
+                if (tc == 2){
+                    return 0;
+                }
+                else if (compute_vert_numb(e) < vert_numb){
+                    return 0;
+                }
+            }
+            e = e->next;
+        }
+    }
+
+    return 1;
+}
+
+static void my_scan_simple(int start_i){
+    if (nv >= input_n){
         write_graph6(stdout, 0);
         total_graphs++;
         return;
@@ -422,53 +735,58 @@ static void my_scan_simple(){
 
     int num_ext3, num_ext4, num_ext5;
     EDGE *ext3[MAXN], *ext4[MAXN], *ext5[MAXN];
-    // find_extentions(ext3,&num_ext3,ext4,&num_ext4,ext5,&num_ext5)
+    my_find_extentions(ext3,&num_ext3,ext4,&num_ext4,ext5,&num_ext5);
 
-    for (int i = 0; i < num_ext3; i++){
-        /*
-        my_ext3(ext3[i]);
-        if (is_canon()){
-            my_scan_simple();
+    int i = 0;
+    if (nv == input_n - 1){
+        i = start_i;
+    }
+    for (; i < num_ext3; i++){
+        /*my_ext3(ext3[i]);
+        if (is_canon(ext3[i])){
+            my_scan_simple(start_i);
         }
-        my_reduce3(ext[i]);
-        */
+        my_reduce3(ext3[i]);
+        //*/
     }
 
-    for (int i = 0; i < num_ext4; i++){
-        /*
+    for (i = 0; i < num_ext4; i++){
         EDGE *list[2];
-        my_ext4(ext4[i], list);
-        if (is_canon()){
-            my_scan_simple();
-        }
-        my_reduce4(ext[i], list);
-        */
+        //my_ext4(ext4[i], list);
+        //if (is_canon(ext4[i]))
+        //    my_scan_simple(start_i);
+        //my_reduce4(ext4[i], list);
     }
 
-    for (int i = 0; i < num_ext5; i++){
-        /*
+    for (i = 0; i < num_ext5; i++){
         EDGE *list[4];
         my_ext5(ext5[i], list);
-        if (is_canon()){
-            my_scan_simple();
-        }
-        my_reduce5(ext[i], list);
-        */
+        //if (is_canon())
+            my_scan_simple(start_i);
+        my_reduce5(ext5[i], list);
+        //*/
     }
 }
 
 int main(int argc, char* argv[]){
     input_n = getswitchvalue(argv[1]);
-    printf("%d\n", input_n);
+    //printf("%d\n", input_n);
 
     if (input_n > MAXN || input_n < 4){
         printf("Invalid number of vertices");
         return -1;
     }
 
-    init_k4();
+    int start_i = 0;
+    if (argc > 2){
+        start_i = getswitchvalue(argv[2]);
+    }
 
-    my_scan_simple();
+    init_k4();
+    // testing my_ext5
+    my_ext3(first_edge[0]);
+
+    my_scan_simple(start_i);
 
     printf("Total graphs foud: %d\n", total_graphs);
 }

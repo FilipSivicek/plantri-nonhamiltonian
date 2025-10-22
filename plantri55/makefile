@@ -173,7 +173,7 @@ plantri_${NL}: plantri.c ./${MY_WORK}/${NL}.c
 
 MP=my_plantri
 my_plantri: ${MY_WORK}/${MP}
-	${CC} -o ${MP} ${CFLAGS} ${MY_WORK}/${MP}.c ${LDFLAGS}
+	${CC} -o ${MP} ${CFLAGS} ${MY_WORK}/${MP}.c ${LDFLAGS} -ggdb3
 
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
