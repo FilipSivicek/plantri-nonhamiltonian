@@ -502,6 +502,7 @@ static void my_ext3(EDGE *e){
     }
 
     for (int i = 0; i < 3; i++){
+        first_edge[e->start] = e;
         degree[e->start]++;
         prepared_edges3[6 * nv + i + 3].start = e->start;
         prepared_edges3[6 * nv + i + 3].end = nv;
@@ -523,6 +524,7 @@ static void my_ext3(EDGE *e){
 static void my_reduce3(EDGE *e){
     EDGE *run = e;
     for (int i = 0; i < 3; i++){
+        first_edge[e->start] = e;
         degree[e->start]--;
         run = e->next->next->invers;
         e->next->next->prev = e;
@@ -613,8 +615,8 @@ void my_ext5(EDGE *e, EDGE* list[]){
         prepared_edges5[10 * nv + i].invers = &prepared_edges5[10 * nv + i + 5];
     }
 
-    degree[incident_v[4]]++;
-    degree[incident_v[1]]++;
+    degree[e->end]++;
+    degree[e->next->next->next->end]++;
     degree[e->start]--;
 
     e->next->next->next->prev = e;
@@ -665,7 +667,6 @@ void my_reduce5(EDGE *e, EDGE *list[]){
     helper->prev = list[1];
 
     helper = helper->prev->prev->invers;
-
     helper->prev->next = list[3];
     helper->prev = list[3];
 
@@ -673,7 +674,7 @@ void my_reduce5(EDGE *e, EDGE *list[]){
     degree[e->next->next->next->end]--;
     degree[e->start]++;
     nv--;
-    ne -= 8;
+    ne -= 10;
 }
 
 static int compute_vert_numb(EDGE *e){
@@ -690,7 +691,7 @@ static int compute_vert_numb(EDGE *e){
     return ans;
 }
 
-static int is_canon(EDGE *father){
+static int is_canon(){
     int repr[MAXN + MAXE];
     for (int i = 0; i < MAXN + MAXE; i++) repr[i] = MAXN + MAXE;
 
@@ -701,8 +702,7 @@ static int is_canon(EDGE *father){
         e = e->next;
     }
 
-    int vert_numb = father->start * MAXN + father->end;
-
+    int vert_numb = compute_vert_numb(e);
     for (int i = 0; i < nv; i++){
         e = first_edge[i];
         for (int j = 0; j < degree[i]; j++){
@@ -726,7 +726,7 @@ static int is_canon(EDGE *father){
     return 1;
 }
 
-static void my_scan_simple(int start_i){
+static void my_scan_simple(){
     if (nv >= input_n){
         write_graph6(stdout, 0);
         total_graphs++;
@@ -738,31 +738,28 @@ static void my_scan_simple(int start_i){
     my_find_extentions(ext3,&num_ext3,ext4,&num_ext4,ext5,&num_ext5);
 
     int i = 0;
-    if (nv == input_n - 1){
-        i = start_i;
-    }
     for (; i < num_ext3; i++){
-        /*my_ext3(ext3[i]);
-        if (is_canon(ext3[i])){
-            my_scan_simple(start_i);
-        }
+        my_ext3(ext3[i]);
+        if (is_canon())
+            my_scan_simple();
         my_reduce3(ext3[i]);
         //*/
     }
 
     for (i = 0; i < num_ext4; i++){
         EDGE *list[2];
-        //my_ext4(ext4[i], list);
-        //if (is_canon(ext4[i]))
-        //    my_scan_simple(start_i);
-        //my_reduce4(ext4[i], list);
+        my_ext4(ext4[i], list);
+        if (is_canon())
+            my_scan_simple();
+        my_reduce4(ext4[i], list);
+        //*/
     }
 
     for (i = 0; i < num_ext5; i++){
         EDGE *list[4];
         my_ext5(ext5[i], list);
-        //if (is_canon())
-            my_scan_simple(start_i);
+        if (is_canon())
+            my_scan_simple();
         my_reduce5(ext5[i], list);
         //*/
     }
@@ -770,23 +767,17 @@ static void my_scan_simple(int start_i){
 
 int main(int argc, char* argv[]){
     input_n = getswitchvalue(argv[1]);
-    //printf("%d\n", input_n);
-
+    
     if (input_n > MAXN || input_n < 4){
         printf("Invalid number of vertices");
         return -1;
     }
 
-    int start_i = 0;
-    if (argc > 2){
-        start_i = getswitchvalue(argv[2]);
-    }
-
     init_k4();
     // testing my_ext5
-    my_ext3(first_edge[0]);
+    //my_ext3(first_edge[0]);
 
-    my_scan_simple(start_i);
+    my_scan_simple();
 
     printf("Total graphs foud: %d\n", total_graphs);
 }

@@ -53,4 +53,4 @@ canon(
 valid5edge(
 
 ## Poznamky
-Nezabudnit pri robeni vlastnych operacii nastavit spravne first_edge. Treba aj po extend aj po reduce
+Nezabudnit pri robeni vlastnych operacii nastavit spravne first_edge. Treba aj po extend aj po reduce. Aj po extend3 a reduce3.
