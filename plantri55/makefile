@@ -172,7 +172,7 @@ plantri_${NL}: plantri.c ./${MY_WORK}/${NL}.c
 	${CC} -o ./bin/${NL} ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${NL}.c"' plantri.c ${LDFLAGS} -ggdb3
 
 MP=my_plantri
-my_plantri: ${MY_WORK}/${MP}
+my_plantri: ${MY_WORK}/${MP}.c
 	${CC} -o ${MP} ${CFLAGS} ${MY_WORK}/${MP}.c ${LDFLAGS} -ggdb3
 
 fullgen: fullgen.c
