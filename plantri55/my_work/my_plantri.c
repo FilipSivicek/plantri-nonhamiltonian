@@ -24,9 +24,25 @@ static int input_n;
 static int total_graphs = 0;
 static EDGE *first_edge[MAXN];
 
+static int all_repr[MAXE][MAXN + MAXE];
+static int repr_found;
+
 static EDGE prepared_edges3[6 * MAXN];
 static EDGE prepared_edges4[8 * MAXN];
 static EDGE prepared_edges5[10 * MAXN];
+
+static void rep_printer(int code[], int num_v){
+    int index = 0;
+    int num_vert = 0;
+    while(num_vert < num_v){
+        printf("%d ", code[index]);
+        if (code[index] == 0){
+            num_vert++;
+        }
+        index++;
+    }
+    printf("\n");
+}
 
 static void edge_printer(EDGE *e){
     printf("start = %d, end = %d\n", e->start, e->end);
@@ -275,7 +291,6 @@ static int my_testcanon_init_v3(EDGE *givenedge, int representation[]){
 
     number[givenedge->start] = 1; 
     startedge[0] = givenedge;
-    startedge[1] = givenedge->invers;
 
     if (degree[givenedge->start] + MAXN < (*representation)){
         better = 1;
@@ -344,7 +359,6 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[]){
 
     number[givenedge->start] = 1; 
     startedge[0] = givenedge;
-    startedge[1] = givenedge->invers;
 
     if (degree[givenedge->start] + MAXN < (*representation)){
         better = 1;
@@ -445,50 +459,6 @@ static void init_k4(){
     nv = 4;
     ne = 12;
     return;
-}
-
-static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN], int *num_ext4, EDGE* ext5[MAXN], int *num_ext5){
-    // finding threes
-    int k = 0;
-    for (int i = 0; i < nv; i++){
-        EDGE *e = first_edge[i];
-        for (int j = 0; j < degree[i]; j++){
-            if (e->start < e->end && e->start < e->next->end){
-                ext3[k] = e;
-                k++;
-            }
-            e = e->next;
-        }
-    }
-    *num_ext3 = k;
-
-    // finding fours
-    k = 0;
-    for (int i = 0; i < nv; i++){
-        EDGE *e = first_edge[i];
-        for (int j = 0; j < degree[i]; j++){
-            if (e->start < e->next->end){
-                ext4[k] = e;
-                k++;
-            }
-            e = e->next;
-        }
-    }
-    *num_ext4 = k;
-
-    // finding fives
-    k = 0;
-    for (int i = 0; i < nv; i++){
-        EDGE *e = first_edge[i];
-        if (degree[i] > 3){
-            for (int j = 0; j < degree[i]; j++){
-                ext5[k] = e;
-                k++;
-                e = e->next;
-            }
-        }
-    }
-    *num_ext5 = k;
 }
 
 static void my_ext3(EDGE *e){
@@ -677,18 +647,160 @@ void my_reduce5(EDGE *e, EDGE *list[]){
     ne -= 10;
 }
 
-static int compute_vert_numb(EDGE *e){
-    int ans = e->end * MAXN + e->prev->end;
-    int helper;
-    for (int i = 0; i < degree[e->start]; i++){
-        helper = e->end * MAXN + e->prev->end;
-        if (helper < ans){
-            ans = helper;
+static int same_repr(int repr1[], int repr2[]){
+    for (int i = 0; i < MAXE + MAXN; i++){
+        if (repr1[i] != repr2[i]){
+            return 0;
         }
+    }
+    return 1;
+}
+
+static int is_new_repr(int repr[]){
+    for (int i = 0; i < repr_found; i++){
+        if (same_repr(repr, all_repr[i])){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static void save_repr(int repr[]){
+    for (int i = 0; i < MAXN + MAXE; i++){
+        all_repr[repr_found][i] = repr[i];
+    }
+    repr_found++;
+}
+
+static int is_vert_canon(){
+    int repr[MAXN + MAXE];
+    for (int i = 0; i < MAXN + MAXE; i++){
+        repr[i] = MAXN + MAXE;
+    }
+
+    for (int i = 0; i < nv - 1; i++){
+        if (degree[i] < degree[nv - 1]){
+            return 0;
+        }
+    }
+
+    EDGE *e = first_edge[nv - 1];
+    for (int i = 0; i < degree[nv - 1]; i++){
+        my_testcanon_init_v3(e, repr);
+        my_testcanon_init_mirror_v3(e, repr);
         e = e->next;
     }
 
-    return ans;
+    if (is_new_repr(repr)){
+        save_repr(repr);
+        return 1;
+    }
+
+    return 0;
+}
+
+static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN], int *num_ext4, EDGE* ext5[MAXN], int *num_ext5){
+    repr_found = 0;
+    // finding threes
+    int k = 0;
+    for (int i = 0; i < nv; i++){
+        EDGE *e = first_edge[i];
+        int last_degree = degree[i];
+        for (int j = 0; j < last_degree; j++){
+            my_ext3(e);
+            if (is_vert_canon()){
+                ext3[k] = e;
+                k++;
+            }
+            my_reduce3(e);
+            e = e->next;
+        }
+    }
+    *num_ext3 = k;
+
+    int repr[MAXN + MAXE];
+    for (int i = 0; i < MAXN + MAXE; i++){
+        repr[i] = MAXN + MAXE;
+    }
+
+    // finding fours
+    k = 0;
+    static EDGE* list[4];
+    static EDGE* list2[4];
+    for (int i = 0; i < nv; i++){
+        EDGE *e = first_edge[i];
+        int last_degree = degree[i];
+        for (int j = 0; j < last_degree; j++){
+            my_ext4(e, list);
+            
+            repr[0] = MAXN + MAXE;
+            my_testcanon_init_v3(first_edge[nv - 1], repr);
+            my_testcanon_init_mirror_v3(first_edge[nv - 1], repr);
+            my_testcanon_init_v3(first_edge[nv - 1]->next->next, repr);
+            my_testcanon_init_mirror_v3(first_edge[nv - 1]->next->next, repr);
+            
+            int is_bad = 0;
+            if (my_testcanon_init_v3(first_edge[nv-1]->next, repr) == 2){
+                is_bad++;
+            }
+            else if (my_testcanon_init_mirror_v3(first_edge[nv-1]->next, repr) == 2){
+                is_bad++;
+            }
+            else if (my_testcanon_init_v3(first_edge[nv-1]->prev, repr) == 2){
+                is_bad++;
+            }
+            else if (my_testcanon_init_mirror_v3(first_edge[nv-1]->prev, repr) == 2){
+                is_bad++;
+            }
+
+            if (!is_bad && is_vert_canon()){
+                ext4[k] = e;
+                k++;
+            }
+            my_reduce4(e, list);
+            e = e->next;
+        }
+    }
+    *num_ext4 = k;
+
+    // finding fives
+    k = 0;
+    for (int i = 0; i < nv; i++){
+        if (degree[i] > 3){
+            EDGE *e = first_edge[i];
+            int last_degree = degree[i];
+            for (int j = 0; j < last_degree; j++){
+                my_ext5(e, list);
+                repr[0] = MAXN + MAXE;
+
+                my_testcanon_init_v3(first_edge[nv - 1], repr);
+                my_testcanon_init_mirror_v3(first_edge[nv - 1], repr);
+                int is_bad = 0;
+                EDGE *e2 = first_edge[nv - 1];
+
+                for (int l = 0; l < 5; l++){
+                    if (my_testcanon_init_v3(e2, repr) == 2){
+                        is_bad++;
+                    }
+                    if (my_testcanon_init_mirror_v3(e2, repr) == 2){
+                        is_bad++;
+                    }
+                    if (is_bad){
+                        break;
+                    }
+                    e2 = e2->next;
+                }
+
+                if (!is_bad && is_vert_canon()){
+                    ext5[k] = e;
+                    k++;
+                }
+                my_reduce5(e, list);
+                e = e->next;
+            }
+        }
+    }
+    *num_ext5 = k;
 }
 
 static int is_canon(){
@@ -702,7 +814,6 @@ static int is_canon(){
         e = e->next;
     }
 
-    int vert_numb = compute_vert_numb(e);
     for (int i = 0; i < nv; i++){
         e = first_edge[i];
         for (int j = 0; j < degree[i]; j++){
@@ -713,9 +824,6 @@ static int is_canon(){
             }
             if (tc){
                 if (tc == 2){
-                    return 0;
-                }
-                else if (compute_vert_numb(e) < vert_numb){
                     return 0;
                 }
             }
