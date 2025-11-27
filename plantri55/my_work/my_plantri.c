@@ -24,7 +24,7 @@ static int input_n;
 static int total_graphs = 0;
 static EDGE *first_edge[MAXN];
 
-static int all_repr[MAXE][MAXN + MAXE];
+static int all_repr[MAXE][MAXN + MAXE + 1];
 static int repr_found;
 
 static EDGE prepared_edges3[6 * MAXN];
@@ -456,6 +456,38 @@ static void init_k4(){
         prepared_edges5[i] = (EDGE){0, 0, NULL, NULL, NULL};
     }
 
+    for (nv = 0; nv < input_n; nv++){
+        for (int i = 0; i < 3; i++){
+            prepared_edges3[6 * nv + i].start = nv;
+            prepared_edges3[6 * nv + i].next = &prepared_edges3[6 * nv + (i + 2) % 3];
+            prepared_edges3[6 * nv + i].prev = &prepared_edges3[6 * nv + (i + 1) % 3];
+            prepared_edges3[6 * nv + i].invers = &prepared_edges3[6 * nv + i + 3];
+
+            prepared_edges3[6 * nv + i + 3].end = nv;
+            prepared_edges3[6 * nv + i + 3].invers = &prepared_edges3[6 * nv + i];
+        }
+
+        for (int i = 0; i < 4; i++){
+            prepared_edges4[8 * nv + i].start = nv;
+            prepared_edges4[8 * nv + i].next = &prepared_edges4[8 * nv + (i + 3) % 4];
+            prepared_edges4[8 * nv + i].prev = &prepared_edges4[8 * nv + (i + 1) % 4];
+            prepared_edges4[8 * nv + i].invers = &prepared_edges4[8 * nv + i + 4];
+
+            prepared_edges4[8 * nv + i + 4].end = nv;
+            prepared_edges4[8 * nv + i + 4].invers = &prepared_edges4[8 * nv + i];
+        }
+
+        for (int i = 0; i < 5; i++){
+            prepared_edges5[10 * nv + i].start = nv;
+            prepared_edges5[10 * nv + i].next = &prepared_edges5[10 * nv + (i + 4) % 5];
+            prepared_edges5[10 * nv + i].prev = &prepared_edges5[10 * nv + (i + 1) % 5];
+            prepared_edges5[10 * nv + i].invers = &prepared_edges5[10 * nv + i + 5];
+
+            prepared_edges5[10 * nv + i + 5].end = nv;
+            prepared_edges5[10 * nv + i + 5].invers = &prepared_edges5[10 * nv + i];
+        }
+    }
+
     nv = 4;
     ne = 12;
     return;
@@ -464,21 +496,15 @@ static void init_k4(){
 static void my_ext3(EDGE *e){
     int incident_v[3] = {e->start, e->next->end, e->end};
     for (int i = 0; i < 3; i++){
-        prepared_edges3[6 * nv + i].start = nv;
         prepared_edges3[6 * nv + i].end = incident_v[i];
-        prepared_edges3[6 * nv + i].next = &prepared_edges3[6 * nv + (i + 2) % 3];
-        prepared_edges3[6 * nv + i].prev = &prepared_edges3[6 * nv + (i + 1) % 3];
-        prepared_edges3[6 * nv + i].invers = &prepared_edges3[6 * nv + i + 3];
     }
 
     for (int i = 0; i < 3; i++){
         first_edge[e->start] = e;
         degree[e->start]++;
         prepared_edges3[6 * nv + i + 3].start = e->start;
-        prepared_edges3[6 * nv + i + 3].end = nv;
         prepared_edges3[6 * nv + i + 3].next = e->next;
         prepared_edges3[6 * nv + i + 3].prev = e;
-        prepared_edges3[6 * nv + i + 3].invers = &prepared_edges3[6 * nv + i];
 
         e->next->prev = &prepared_edges3[6 * nv + i + 3];
         e->next = &prepared_edges3[6 * nv + i + 3];
@@ -511,11 +537,7 @@ static void my_ext4(EDGE* e, EDGE* list[]){
     list[1] = e->next->invers;
     int incident_v[4] = {e->start,e->next->next->end, e->next->end, e->end};
     for (int i = 0; i < 4; i++){
-        prepared_edges4[8 * nv + i].start = nv;
         prepared_edges4[8 * nv + i].end = incident_v[i];
-        prepared_edges4[8 * nv + i].next = &prepared_edges4[8 * nv + (i + 3) % 4];
-        prepared_edges4[8 * nv + i].prev = &prepared_edges4[8 * nv + (i + 1) % 4];
-        prepared_edges4[8 * nv + i].invers = &prepared_edges4[8 * nv + i + 4];
     }
 
     degree[e->end]++;
@@ -531,10 +553,8 @@ static void my_ext4(EDGE* e, EDGE* list[]){
     for (int i = 0; i < 4; i++){
         first_edge[e->start] = e;
         prepared_edges4[8 * nv + i + 4].start = e->start;
-        prepared_edges4[8 * nv + i + 4].end = nv;
         prepared_edges4[8 * nv + i + 4].next = e->next;
         prepared_edges4[8 * nv + i + 4].prev = e;
-        prepared_edges4[8 * nv + i + 4].invers = &prepared_edges4[8 * nv + i];
 
         e->next->prev = &prepared_edges4[8 * nv + i + 4];
         e->next = &prepared_edges4[8 * nv + i + 4];
@@ -544,7 +564,7 @@ static void my_ext4(EDGE* e, EDGE* list[]){
     
     degree[nv] = 4;
     nv++;
-    ne += 8;
+    ne += 6;
 }
 
 static void my_reduce4(EDGE* e, EDGE* list[]){
@@ -567,7 +587,7 @@ static void my_reduce4(EDGE* e, EDGE* list[]){
     degree[e->end]--;
     degree[e->next->next->end]--;
     nv--;
-    ne -= 8;
+    ne -= 6;
 }
 
 void my_ext5(EDGE *e, EDGE* list[]){
@@ -578,11 +598,7 @@ void my_ext5(EDGE *e, EDGE* list[]){
 
     int incident_v[5] = {e->start,e->next->next->next->end, e->next->next->end, e->next->end, e->end};
     for (int i = 0; i < 5; i++){
-        prepared_edges5[10 * nv + i].start = nv;
         prepared_edges5[10 * nv + i].end = incident_v[i];
-        prepared_edges5[10 * nv + i].next = &prepared_edges5[10 * nv + (i + 4) % 5];
-        prepared_edges5[10 * nv + i].prev = &prepared_edges5[10 * nv + (i + 1) % 5];
-        prepared_edges5[10 * nv + i].invers = &prepared_edges5[10 * nv + i + 5];
     }
 
     degree[e->end]++;
@@ -603,10 +619,8 @@ void my_ext5(EDGE *e, EDGE* list[]){
     for (int i = 0; i < 5; i++){
         first_edge[e->start] = e;
         prepared_edges5[10 * nv + i + 5].start = e->start;
-        prepared_edges5[10 * nv + i + 5].end = nv;
         prepared_edges5[10 * nv + i + 5].next = e->next;
         prepared_edges5[10 * nv + i + 5].prev = e;
-        prepared_edges5[10 * nv + i + 5].invers = &prepared_edges5[10 * nv + i];
 
         e->next->prev = &prepared_edges5[10 * nv + i + 5];
         e->next = &prepared_edges5[10 * nv + i + 5];
@@ -616,7 +630,7 @@ void my_ext5(EDGE *e, EDGE* list[]){
     
     degree[nv] = 5;
     nv++;
-    ne += 10;
+    ne += 6;
 }
 
 void my_reduce5(EDGE *e, EDGE *list[]){
@@ -644,16 +658,23 @@ void my_reduce5(EDGE *e, EDGE *list[]){
     degree[e->next->next->next->end]--;
     degree[e->start]++;
     nv--;
-    ne -= 10;
+    ne -= 6;
 }
 
 static int same_repr(int repr1[], int repr2[]){
-    for (int i = 0; i < MAXE + MAXN; i++){
+    for (int i = 0; i < nv + ne + 1; i++){
         if (repr1[i] != repr2[i]){
             return 0;
         }
     }
     return 1;
+}
+
+static void save_repr(int repr[]){
+    for (int i = 0; i < nv + ne + 1; i++){
+        all_repr[repr_found][i] = repr[i];
+    }
+    repr_found++;
 }
 
 static int is_new_repr(int repr[]){
@@ -665,18 +686,9 @@ static int is_new_repr(int repr[]){
     return 1;
 }
 
-static void save_repr(int repr[]){
-    for (int i = 0; i < MAXN + MAXE; i++){
-        all_repr[repr_found][i] = repr[i];
-    }
-    repr_found++;
-}
-
 static int is_vert_canon(){
-    int repr[MAXN + MAXE];
-    for (int i = 0; i < MAXN + MAXE; i++){
-        repr[i] = MAXN + MAXE;
-    }
+    int repr[nv + ne + 1];
+    repr[0] = MAXN + MAXE;
 
     for (int i = 0; i < nv - 1; i++){
         if (degree[i] < degree[nv - 1]){
@@ -699,12 +711,37 @@ static int is_vert_canon(){
     return 0;
 }
 
+static int is_canon(){
+    int repr[nv + ne + 1];
+    repr[0] = MAXN + MAXE;
+
+    EDGE *e = first_edge[nv - 1];
+    for (int i = 0; i < degree[nv - 1]; i++){
+        my_testcanon_init_v3(e, repr);
+        my_testcanon_init_mirror_v3(e, repr);
+        e = e->next;
+    }
+
+    for (int i = 0; i < nv; i++){
+        e = first_edge[i];
+        for (int j = 0; j < degree[i]; j++){
+            if (my_testcanon_init_v3(e, repr) == 2 || my_testcanon_init_mirror_v3(e, repr) == 2){
+                return 0;
+            }
+            e = e->next;
+        }
+    }
+
+    return 1;
+}
+
 static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN], int *num_ext4, EDGE* ext5[MAXN], int *num_ext5){
     repr_found = 0;
     // finding threes
     int k = 0;
+    EDGE *e;
     for (int i = 0; i < nv; i++){
-        EDGE *e = first_edge[i];
+        e = first_edge[i];
         int last_degree = degree[i];
         for (int j = 0; j < last_degree; j++){
             my_ext3(e);
@@ -718,17 +755,14 @@ static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN]
     }
     *num_ext3 = k;
 
-    int repr[MAXN + MAXE];
-    for (int i = 0; i < MAXN + MAXE; i++){
-        repr[i] = MAXN + MAXE;
-    }
+    // this has to be ready for next extensions
+    int repr[nv + ne + 1 + (1 + 6)];
 
     // finding fours
     k = 0;
     static EDGE* list[4];
-    static EDGE* list2[4];
     for (int i = 0; i < nv; i++){
-        EDGE *e = first_edge[i];
+        e = first_edge[i];
         int last_degree = degree[i];
         for (int j = 0; j < last_degree; j++){
             my_ext4(e, list);
@@ -767,7 +801,7 @@ static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN]
     k = 0;
     for (int i = 0; i < nv; i++){
         if (degree[i] > 3){
-            EDGE *e = first_edge[i];
+            e = first_edge[i];
             int last_degree = degree[i];
             for (int j = 0; j < last_degree; j++){
                 my_ext5(e, list);
@@ -782,9 +816,10 @@ static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN]
                     if (my_testcanon_init_v3(e2, repr) == 2){
                         is_bad++;
                     }
-                    if (my_testcanon_init_mirror_v3(e2, repr) == 2){
+                    else if (my_testcanon_init_mirror_v3(e2, repr) == 2){
                         is_bad++;
                     }
+                    
                     if (is_bad){
                         break;
                     }
@@ -801,37 +836,6 @@ static void my_find_extentions(EDGE *ext3[MAXN], int *num_ext3, EDGE* ext4[MAXN]
         }
     }
     *num_ext5 = k;
-}
-
-static int is_canon(){
-    int repr[MAXN + MAXE];
-    for (int i = 0; i < MAXN + MAXE; i++) repr[i] = MAXN + MAXE;
-
-    EDGE *e = first_edge[nv - 1];
-    for (int i = 0; i < degree[nv - 1]; i++){
-        my_testcanon_init_v3(e, repr);
-        my_testcanon_init_mirror_v3(e, repr);
-        e = e->next;
-    }
-
-    for (int i = 0; i < nv; i++){
-        e = first_edge[i];
-        for (int j = 0; j < degree[i]; j++){
-            int tc = my_testcanon_init_v3(e, repr);
-            int tcm = my_testcanon_init_mirror_v3(e, repr);
-            if (tcm > tc){
-                tc = tcm;
-            }
-            if (tc){
-                if (tc == 2){
-                    return 0;
-                }
-            }
-            e = e->next;
-        }
-    }
-
-    return 1;
 }
 
 static void my_scan_simple(){
@@ -851,7 +855,6 @@ static void my_scan_simple(){
         if (is_canon())
             my_scan_simple();
         my_reduce3(ext3[i]);
-        //*/
     }
 
     for (i = 0; i < num_ext4; i++){
@@ -860,7 +863,6 @@ static void my_scan_simple(){
         if (is_canon())
             my_scan_simple();
         my_reduce4(ext4[i], list);
-        //*/
     }
 
     for (i = 0; i < num_ext5; i++){
@@ -869,7 +871,6 @@ static void my_scan_simple(){
         if (is_canon())
             my_scan_simple();
         my_reduce5(ext5[i], list);
-        //*/
     }
 }
 
@@ -882,9 +883,6 @@ int main(int argc, char* argv[]){
     }
 
     init_k4();
-    // testing my_ext5
-    //my_ext3(first_edge[0]);
-
     my_scan_simple();
 
     printf("Total graphs foud: %d\n", total_graphs);

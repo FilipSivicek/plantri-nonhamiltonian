@@ -1,5 +1,5 @@
 #define VERSION "5.5 - May 17, 2024"
-#define SWITCHES "[-uagsEFTh -Ac#txm#P#bpe#f#qQ -odGVX -v]"
+#define SWITCHES "[-uagsEFNTh -Ac#txm#P#bpe#f#qQ -odGVX -v]"
 #define TMP
 #pragma once
 /* plantri.c :  generate imbedded planar graphs 
@@ -296,8 +296,6 @@ typedef struct
 static char *outfilename;  /* name of output file (NULL for stdout) */
 static FILE *outfile;      /* output file for graphs */
 static FILE *msgfile;      /* file for informational messages */
-static FILE *before_extend_file;
-static FILE *after_extend_file;
 
 static int maxnv;          /* order of output graphs */
 static int res,mod;        /* res/mod from command line (default 0/1) */
@@ -345,8 +343,11 @@ static int aswitch,        /* presence of command-line switches */
            xswitch,
            Xswitch;
 
-// new switch to process graph from text file
+// switch to read graph from text file
 static int Fswitch;
+
+// switch to generate narboni class
+static int Nswitch;
 
 static int zeroswitch;     /* Undocumented option -0, writes digits */
 static int oneswitch;      /* Undocumented option -1, implies -0 */
@@ -2700,9 +2701,6 @@ initialize_min4(void)
 }
 
 /**************************************************************************/
-
-/* Research this function F.S.
-*/
 
 static void
 initialize_triang(void) 
@@ -5794,7 +5792,7 @@ make_colours(int col[], EDGE *e3)
               + (1 << (degree[e->next->next->end]&7));
             
             // If some vertex can have better colour, it is now optimal to start canonical code 
-            // from vertex nv, co we do not expand there
+            // from vertex nv, so we do not expand there
             if (c > c0)  
             {
                 // set degrees to original before exiting
@@ -7548,9 +7546,6 @@ scansimple(int nbtot, int nbop)
 
     for (i = 0; i < next4; ++i)
     {
-        if (nv == maxnv - 1){
-            write_alpha(before_extend_file, 0);
-        }
         extend4(ext4[i],save_list);
 #ifdef FAST_FILTER_SIMPLE
         if (FAST_FILTER_SIMPLE)
@@ -7576,9 +7571,6 @@ scansimple(int nbtot, int nbop)
         }
 
         reduce4(ext4[i],save_list);
-        if (nv == maxnv - 1){
-            write_alpha(after_extend_file, 0);
-        }
     }
 
     for (i = 0; i < next5; ++i) 
@@ -19009,8 +19001,10 @@ decode_command_line(int argc, char *argv[])
     gswitch = FALSE;
     sswitch = FALSE;
     Eswitch = FALSE;
-    // new switch to process graph from text file
+    // switch to process graph from text file
     Fswitch = FALSE;
+    // switch to generate narboni class
+    Nswitch = FALSE;
     Tswitch = FALSE;
     Gswitch = FALSE;
     hswitch = FALSE;
@@ -19050,8 +19044,10 @@ decode_command_line(int argc, char *argv[])
             BOOLSWITCH('g',gswitch)
             BOOLSWITCH('s',sswitch)
             BOOLSWITCH('E',Eswitch)
-            // new switch to process graph from text file
+            // switch to process graph from text file
             BOOLSWITCH('F',Fswitch)
+            // switch to generate narboni class
+            BOOLSWITCH('N',Nswitch)
             BOOLSWITCH('T',Tswitch)
             BOOLSWITCH('u',uswitch)
             BOOLSWITCH('v',vswitch)
@@ -19082,12 +19078,10 @@ decode_command_line(int argc, char *argv[])
             else  
             {
                 CHECKSWITCH(arg[j]);
-                fprintf(stdout, "tu1\n");
                 badargs = TRUE;
             }
         }
         else if (argsgot >= 3){
-            fprintf(stdout, "tu2\n");
             badargs = TRUE;
         }
         else if (argsgot == 0)
@@ -19102,7 +19096,6 @@ decode_command_line(int argc, char *argv[])
                 }
                 else  maxnv = maxnv / 2 + 2;
             else if (arg[j+1] != '\0'){
-                fprintf(stdout, "tu3\n");
                 badargs = TRUE;
             }
             ++argsgot;
@@ -19112,7 +19105,6 @@ decode_command_line(int argc, char *argv[])
             if (arg[0] == '-')
             {
                 if (argsgot == 0) {
-                    fprintf(stdout, "tu4\n");
                     badargs = TRUE;
                 }
             }
@@ -19128,7 +19120,6 @@ decode_command_line(int argc, char *argv[])
     }
 
     if (argsgot == 0) {
-        fprintf(stdout, "tu5\n");
         badargs = TRUE;
     }
 
@@ -20152,131 +20143,6 @@ static void edge_printer(FILE* f){
     }
 }
 
-static void extend_b(EDGE *ext, EDGE* list[]){
-    EDGE* list1[2];
-    EDGE* list2[2];
-
-    extend3(ext->next->next);
-    extend4(ext->next, list1);
-    extend4(ext, list2);
-    
-    list[0] = list1[0];
-    list[1] = list1[1];
-    
-    list[2] = list2[0];
-    list[3] = list2[1];
-}
-        
-static void reduce_b(EDGE *e, EDGE *list[]){
-    EDGE *list1[2];
-    EDGE *list2[2];
-
-    list1[0] = list[0];
-    list1[1] = list[1];
-    
-    list2[0] = list[2];
-    list2[1] = list[3];
-    
-    reduce4(e, list2);
-    reduce4(e->next, list1);
-    reduce3(e->next->next);
-}
-
-static void
-get_graph_from_file(void)
-/* Reading graph from file 
-   F.S. 
-*/
-{
-    initialize_triang();
-
-    FILE* fptr = fopen(outfilename, "r");
-    char graph_string[MAXE + MAXN + 1];
-
-    printf("getting graph from file\n");
-    printf("%s\n", outfilename);
-
-    fscanf(fptr, "%s", graph_string);
-    printf("graph_string: %s\n", graph_string);
-    
-    int next_ch = 0;
-    ne = 0;
-    EDGE connecting_edges[maxnv][maxnv];
-    for (int i = 0; i < maxnv; i++){
-        char ch;
-        int j = 0;
-        while (graph_string[next_ch] != '\0'){
-            ch = graph_string[next_ch];
-            next_ch++;
-            if (ch == ','){
-                break;
-            }
-
-            connecting_edges[i][j] = (EDGE){0, 0, 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0};
-            connecting_edges[i][j].start = i;
-            connecting_edges[i][j].end = ch - 'a';
-            ne++;
-            j++;
-        }
-        degree[i] = j;
-    }
-    nv = maxnv;
-    
-    for (int i = 0; i < maxnv; i++){
-        for (int j = 0; j < degree[i]; j++){
-            connecting_edges[i][j].next = &connecting_edges[i][(j + 1) % degree[i]];
-            connecting_edges[i][j].prev = &connecting_edges[i][(j - 1 + degree[i]) % degree[i]];
-
-            int end_vertex = connecting_edges[i][j].end;
-            for (int k = 0; k < degree[end_vertex]; k++){
-                if (connecting_edges[end_vertex][k].end == i){
-                    connecting_edges[i][j].invers = &connecting_edges[end_vertex][k];
-                    break;
-                }
-            }
-        }
-    }
-
-    for (int i = 0; i < maxnv; i++){
-        firstedge[i] = &connecting_edges[i][0];
-    }
-
-    FILE* outf = fopen("result.txt", "w");
-    
-    write_graph6(outf, 0);
-    write_alpha(outf, 0);
-    printf("initialization done\n");
-    
-    for (int i = 0; i < nv; i++){
-        if (degree[i] == 4){
-            int higher_5 = 0;
-            EDGE *e = firstedge[i];
-            for (int j = 0; j < 4; j++){
-                if (degree[e->end] >= 5){
-                    higher_5++;
-                }
-                else {
-                    break;
-                }
-                e = e->next;
-            }
-            if (higher_5 == 4){
-                e = firstedge[i];
-                EDGE *list[4];
-
-                extend_b(e, list);
-                write_graph6(outf, 0);
-
-                reduce_b(e, list);
-                write_graph6(outf, 0);
-                write_alpha(outf, 0);
-            }
-        }
-    }
-    
-    exit(EXIT_SUCCESS);   
-}
-
 /****************************************************************************/
 
 static void
@@ -20474,10 +20340,1348 @@ bipartite_dispatch(void)
 /****************************************************************************/
 
 static void
+get_graph_from_file(void)
+/* Reading graph from file 
+   F.S. 
+*/
+{
+    initialize_triang();
+
+    FILE* fptr = fopen(outfilename, "r");
+    char graph_string[MAXE + MAXN + 1];
+
+    printf("getting graph from file\n");
+    printf("%s\n", outfilename);
+
+    fscanf(fptr, "%s", graph_string);
+    printf("graph_string: %s\n", graph_string);
+    
+    int next_ch = 0;
+    ne = 0;
+    EDGE connecting_edges[maxnv][maxnv];
+    for (int i = 0; i < maxnv; i++){
+        char ch;
+        int j = 0;
+        while (graph_string[next_ch] != '\0'){
+            ch = graph_string[next_ch];
+            next_ch++;
+            if (ch == ','){
+                break;
+            }
+
+            connecting_edges[i][j] = (EDGE){0, 0, 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0};
+            connecting_edges[i][j].start = i;
+            connecting_edges[i][j].end = ch - 'a';
+            ne++;
+            j++;
+        }
+        degree[i] = j;
+    }
+    nv = maxnv;
+    
+    for (int i = 0; i < maxnv; i++){
+        for (int j = 0; j < degree[i]; j++){
+            connecting_edges[i][j].next = &connecting_edges[i][(j + 1) % degree[i]];
+            connecting_edges[i][j].prev = &connecting_edges[i][(j - 1 + degree[i]) % degree[i]];
+
+            int end_vertex = connecting_edges[i][j].end;
+            for (int k = 0; k < degree[end_vertex]; k++){
+                if (connecting_edges[end_vertex][k].end == i){
+                    connecting_edges[i][j].invers = &connecting_edges[end_vertex][k];
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < maxnv; i++){
+        firstedge[i] = &connecting_edges[i][0];
+    }
+
+    FILE* outf = fopen("result.txt", "w");
+    
+    write_graph6(outf, 0);
+    write_alpha(outf, 0);
+    printf("initialization done\n");
+    
+    exit(EXIT_SUCCESS);   
+}
+
+/****************************************************************************/
+
+
+static int all_repr[MAXE][MAXN + MAXE + 1];
+static int repr_found;
+
+static int same_repr(int repr1[], int repr2[]){
+    for (int i = 0; i < nv + ne + 1; i++){
+        if (repr1[i] != repr2[i]){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static void save_repr(int repr[]){
+    for (int i = 0; i < nv + ne + 1; i++){
+        all_repr[repr_found][i] = repr[i];
+    }
+    repr_found++;
+}
+
+static int is_new_repr(int repr[]){
+    for (int i = 0; i < repr_found; i++){
+        if (same_repr(repr, all_repr[i])){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int is_vert_canon(int colour[], int vert){
+    int repr[nv + ne + 1];
+    repr[0] = MAXN + MAXE;
+
+    for (int i = 0; i < nv - 1; i++){
+        if (degree[i] < degree[vert]){
+            return 0;
+        }
+    }
+
+    EDGE *e = firstedge[vert];
+    for (int i = 0; i < degree[vert]; i++){
+        testcanon_init(e, repr, colour);
+        testcanon_mirror_init(e, repr, colour);
+        e = e->next;
+    }
+
+    if (is_new_repr(repr)){
+        save_repr(repr);
+        return 1;
+    }
+
+    return 0;
+}
+
+static void
+initialize_narboni(void)
+/* initialize edges for narboni class, and makes 
+   the initial graph */
+{
+    initialize_triang();
+    EDGE *e = firstedge[0];
+    EDGE *list[2];
+    extend3(e);
+    extend3(e->next);
+    extend4(e->next->next, list);
+    extend4(e->next, list);
+    extend4(e, list);
+}
+
+/* e->start should have valence 4, e->end valence 5, e->next->end valence 5
+   Deletes e->prev->invers->prev, e->prev->invers and their inverse and puts a valence 
+   5 vertex into the resulting pentagon.
+   In list[0..3] the deleted edges are stored. This list must be handed 
+   to reduce_a */
+static void extend_a(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] !=  4){
+        is_bad = 1;
+    }
+    if (degree[e->end] != 5 || degree[e->next->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->next->end] < 5 || degree[e->prev->end] < 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->invers->prev->prev->end] != 4){
+        is_bad = 1;
+    }
+
+    int other_4 = e->invers->prev->prev->end;
+    EDGE *helper = firstedge[other_4];
+    for (int i = 0; i < 4; i++){
+        if (degree[helper->end] < 5){
+            is_bad = 1;
+        }
+        helper = helper->next;
+    }
+
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_a e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend5(e->prev->invers->prev->prev, list);
+}
+
+/* The inverse operation to extend_a().
+   e->start should have valence 4, e->end valence 5, e->next->end valence 5,
+   e->prev->end valence 5.
+   Deletes the vertex with valence 5 at the end of e->prev. It is not 
+   checked whether the vertex really has valence 5 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before.
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_a(EDGE *e, EDGE *list[]){
+    reduce5(e->prev->invers->next->next->invers->prev, list);
+}
+
+// inserts vertex v1 with valence 3 in prev->prev triangle.
+// then inserts vertex v2 with valence 4 into edge e->next->next.
+// then inserts vertex v3 with valence 4 into edge e->next.
+// at the end, v1 has valence 4, v2 has valence 5 and v3 has valence 4.
+// e points at vertex with valence 6+, e->next points at vertex with valence 4.
+static void extend_b(EDGE *e, EDGE* list[]){
+    int is_bad = 0;
+    if (degree[e->start] != 4){
+        is_bad = 1;
+    }
+
+    EDGE* helper = e;
+    for (int i = 0; i < 4; i++){
+        if (degree[helper->end] < 5){
+            is_bad = 1;
+        }
+        helper = helper->next;
+    }
+
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_b e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    EDGE* list1[2];
+    EDGE* list2[2];
+
+    extend3(e->next->next);
+    extend4(e->next, list1);
+    extend4(e, list2);
+    
+    list[0] = list1[0];
+    list[1] = list1[1];
+    
+    list[2] = list2[0];
+    list[3] = list2[1];
+}
+
+// invers operation to extend_b. 
+static void reduce_b(EDGE *e, EDGE *list[]){
+    EDGE *list1[2];
+    EDGE *list2[2];
+
+    list1[0] = list[0];
+    list1[1] = list[1];
+    
+    list2[0] = list[2];
+    list2[1] = list[3];
+    
+    reduce4(e, list2);
+    reduce4(e->next, list1);
+    reduce3(e->next->next);
+}
+
+/* Verifies, if e is valid place for extend_c.
+   e->start should have valence 5, e->end valence 4, 
+   e->next->end valence 5, e->next->next->end valence 4.
+   Deletes e->next and its inverse and puts a valence 4 vertex into the
+   resulting square.
+   In list[0..1] the deleted edges are stored. This list must be handed 
+   to reduce_c */
+static void extend_c(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->end] != 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->next->end] != 4){
+        is_bad = 1;
+    }
+
+    EDGE *helper = firstedge[e->end];
+    for (int i = 0; i < 4; i++){
+        if (degree[helper->end] < 5){
+            is_bad = 1;
+        }
+        helper = helper->next;
+    }
+
+    helper = firstedge[e->next->next->end];
+    for (int i = 0; i < 4; i++){
+        if (degree[helper->end] < 5){
+            is_bad = 1;
+        }
+        helper = helper->next;
+    }
+
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_c e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend4(e, list);
+}
+
+/* The e->start should be vertex of valence 5, e->end valence 5, e->next->end valence 4.
+   The inverse operation to extend_c().
+   Deletes the vertex with valence 4 in the triangle on the right hand side
+   (->next-direction) of the edge e->next->end that is not contained in e->next->end. It is not 
+   checked whether the vertex really has valence 4 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before. 
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_c(EDGE *e, EDGE *list[]){
+    reduce4(e, list);
+}
+
+/* Verifies, if e is valid place for extend_d.
+   e->start should have valence 4, e->end valence 5, 
+   e->next->end valence 5.
+   Deletes e->invers->prev and its inverse and puts a valence 4 vertex into the
+   resulting square.
+   In list[0..1] the deleted edges are stored. This list must be handed 
+   to reduce_d */
+static void extend_d(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] != 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->end] != 5){
+        is_bad = 1;
+    }
+    
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_d e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+    extend4(e->invers->prev->prev, list);
+}
+
+/* The e->start should have valence 5, e->end valence 5, e->next->end valence 4.
+   The inverse operation to extend_d().
+   Deletes the vertex with valence 4 in the triangle on the right hand side of e->invers->prev->prev
+   (->next-direction) of the edge e->invers->prev->prev that is not contained in e->invers->prev->prev. It is not 
+   checked whether the vertex really has valence 4 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before. 
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_d(EDGE *e, EDGE *list[]){
+    reduce4(e->invers->prev->prev, list);
+}
+
+/* Verifies, if e is valid place for extend_e.
+   e->start is vertex with valence 4, e->end is vertex with valence 5, 
+   e->next->end vertex with valence 5.
+   Deletes e->next->next->invers->next and its inverse and puts a valence 4 vertex into the
+   resulting square.
+   In list[0..1] the deleted edges are stored. This list must be handed 
+   to reduce_e */
+static void extend_e(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] != 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->next->end] < 6){
+        is_bad = 1;
+    }
+
+    if (degree[e->prev->end] < 5){
+        is_bad = 1;
+    }
+
+    EDGE *helper = e->invers;
+    if (degree[helper->next->next->end] < 4 || degree[helper->prev->prev->end] < 4){
+        is_bad = 1;
+    }
+    if (degree[helper->next->next->end] ==  4 && degree[helper->prev->prev->end] == 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->invers->prev->prev->end] < 5){
+        is_bad = 1;
+    }
+    
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_e e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend4(e->next->next->invers, list);
+}
+
+/* The e->start should have valence 5, e->end valence 5, e->next->end valence 5,
+   e->next->next->end valence 4.
+   The inverse operation to extend_e().
+   Deletes the vertex with valence 4 in the triangle on the right hand side of e->prev->prev->invers
+   (->next-direction) of the edge e->prev->prev->invers that is not contained in e->prev->prev->invers. It is not 
+   checked whether the vertex really has valence 4 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before. 
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_e(EDGE *e, EDGE *list[]){
+    reduce4(e->prev->prev->invers, list);
+}
+
+/* Verifies, if e is valid place for extend_e_mirror.
+   e->start is vertex with valence 4, e->end is vertex with valence 5, 
+   e->prev->end vertex with valence 5.
+   Deletes e->prev->prev->invers->prev and its inverse and puts a valence 4 vertex into the
+   resulting square.
+   In list[0..1] the deleted edges are stored. This list must be handed 
+   to reduce_e_mirror */
+static void extend_e_mirror(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] != 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->prev->end] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->prev->prev->end] < 6){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->end] < 5){
+        is_bad = 1;
+    }
+
+    EDGE *helper = e->invers;
+    if (degree[helper->next->next->end] < 4 || degree[helper->prev->prev->end] < 4){
+        is_bad = 1;
+    }
+    if (degree[helper->next->next->end] ==  4 && degree[helper->prev->prev->end] == 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->prev->invers->next->next->end] < 5){
+        is_bad = 1;
+    }
+    
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_e e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend4(e->prev->prev->invers->prev->prev, list);
+}
+
+/* The e->start should have valence 5, e->end valence 5, e->prev->end valence 5,
+   e->prev->prev->end valence 4.
+   The inverse operation to extend_e_mirror.
+   Deletes the vertex with valence 4 in the triangle on the right hand side of e->next->next->invers
+   (->next-direction) of the edge e->next->next->invers that is not contained in e->next->next->invers. It is not 
+   checked whether the vertex really has valence 4 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before. 
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_e_mirror(EDGE *e, EDGE *list[]){
+    reduce4(e->next->next->invers->prev->prev, list);
+}
+
+/* Verifies, if e is valid place for extend_f.
+   e->start should have valence 5, e->end valence 5+, 
+   e->next->end valence 4+, e->prev->end valence 4+.
+   Inserts a vertex with valence 3 in the triangle on the right hand
+   side (->next direction) of the edge e->next->next.
+   Deletes e->next, e->next->next and their inverse and puts a valence 
+   5 vertex into the resulting pentagon.
+   In list[0..3] the deleted edges are stored. This list must be handed 
+   to reduce_f */
+static void extend_f(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] != 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->end] < 5){
+        is_bad = 1;
+    }
+
+    if (degree[e->next->end] < 4){
+        is_bad = 1;
+    }
+
+    if (degree[e->prev->end] < 4){
+        is_bad = 1;
+    }
+
+    EDGE *helper = e;
+    for (int i = 0; i < 5; i++){
+        if (degree[helper->end] < 4){
+            is_bad = 1;
+        }
+        if (degree[helper->end] == 4 && degree[helper->next->end] == 4){
+            is_bad = 1;
+        }
+        helper = helper->next;
+    }
+
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_f e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend3(e->next->next);
+    extend5(e, list);
+}
+
+/* The e->start should have valence 5, e->end valence 6+, e->next->end valence 5,
+   e->next->next->end valence 4.
+   The inverse operation to extend_f.*/
+static void reduce_f(EDGE *e, EDGE *list[]){
+    reduce5(e, list);
+    reduce3(e->next->next);
+}
+
+/* Verifies, if e is valid place for extend_g.
+   e->start should have valence 5+, e->end valence 5+, 
+   e->next->end valence 5+, e->next->next->end valence 5+.
+   Deletes e->next and its inverse and puts a valence 
+   4 vertex into the resulting square.
+   In list[0..1] the deleted edges are stored. This list must be handed 
+   to reduce_g */
+static void extend_g(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] < 5){
+        is_bad = 1;
+    }
+    if (degree[e->end] < 5 || degree[e->next->end] < 5 || degree[e->next->next->end] < 5){
+        is_bad = 1;
+    }
+    
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_g e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend4(e, list);
+}
+
+/* The e->start should have valence 5+, e->end valence 6+, e->next->end valence 4,
+   e->next->next->end valence 6+.
+   The inverse operation to extend_g().
+   Deletes the vertex with valence 4 in the triangle on the right hand side of e
+   (->next-direction) of the edge e that is not contained in e. It is not 
+   checked whether the vertex really has valence 4 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before. 
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_g(EDGE *e, EDGE *list[]){
+    reduce4(e, list);
+}
+
+/* e->start should have valence 4, e->end valence 5, e->next->end valence 5
+   Deletes e->prev->invers->prev, e->prev->invers and their inverse and puts a valence 
+   5 vertex into the resulting pentagon.
+   In list[0..3] the deleted edges are stored. This list must be handed 
+   to reduce_h */
+static void extend_h(EDGE *e, EDGE *list[]){
+    int is_bad = 0;
+    if (degree[e->start] < 6){
+        is_bad = 1;
+    }
+
+    if (degree[e->end] < 4 || degree[e->next->end] < 5 || degree[e->next->next->end] < 5 || degree[e->next->next->next->end] < 4){
+        is_bad = 1;
+    }
+
+    if (is_bad){
+        fprintf(outfile, "invalid operand for extend_h e->start = %d, e->end = %d\n", e->start, e->end);
+        return;
+    }
+
+    extend5(e, list);
+}
+
+/* The inverse operation to extend_h.
+   e->start should have valence 5+, e->next->end valence 5, all edges around e->next->end 
+   should have valence 5+.
+   Deletes the vertex with valence 5 at the end of e->prev. It is not 
+   checked whether the vertex really has valence 5 -- this has to be made
+   sure in advance. The vector list[] must contain the edges deleted before.
+   It might be that one of the edges leading to the new vertex now is
+   an entry of firstedge[] */
+static void reduce_h(EDGE *e, EDGE *list[]){
+    reduce5(e, list);
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_a(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 4){
+        is_good = 0;
+    }
+    if (degree[e->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->invers->prev->prev->end] != 4){
+        is_good = 0;
+    }
+
+    EDGE *helper = e->invers->prev->prev->invers;
+    if (degree[helper->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[helper->next->next->end] < 5){
+        is_good = 0;
+    }
+
+    if (degree[e->prev->end] == 5){
+        if (degree[e->prev->invers->next->next->end] == 4){
+            is_good = 0;
+        }
+    }
+
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_b(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 4){
+        is_good = 0;
+    }
+    if (degree[e->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] < 5){
+        is_good = 0;
+    }
+    
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_c(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 5){
+        is_good = 0;
+    }
+    if (degree[e->end] != 4){
+        is_good = 0;
+    }
+    if (degree[e->next->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] != 4){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->prev->end] < 5){
+        is_good = 0;
+    }
+
+    EDGE *helper = e->next->invers->next->next;
+    if (degree[helper->end] < 5){
+        is_good = 0;
+    }
+    if (degree[helper->next->end] < 5){
+        is_good = 0;
+    }
+    
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_d(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 4){
+        is_good = 0;
+    }
+    if (degree[e->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] < 5){
+        is_good = 0;
+    }
+
+    EDGE *helper = e->invers->next->next;
+    if (degree[helper->end] < 4){
+        is_good = 0;
+    }
+    if(degree[helper->next->end] < 5){
+        is_good = 0;
+    }
+    if(degree[helper->next->invers->prev->prev->end] < 4){
+        is_good = 0;
+    }
+    
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_e(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 4){
+        is_good = 0;
+    }
+    if (degree[e->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 6){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] < 5){
+        is_good = 0;
+    }
+
+    EDGE *helper = e->invers->next->next;
+    if (degree[helper->end] < 4){
+        is_good = 0;
+    }
+    if (degree[helper->next->end] < 4){
+        is_good = 0;
+    }
+    if (degree[helper->end] == 4 && degree[helper->next->end] == 4){
+        is_good = 0;
+    }
+
+    if (degree[e->next->invers->prev->prev->end] < 5){
+        is_good = 0;
+    }
+
+    return is_good;
+}
+
+int is_valid_extend_e_mirror(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 4){
+        is_good = 0;
+    }
+    if (degree[e->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] != 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->prev->end] < 6){
+        is_good = 0;
+    }
+    if (degree[e->next->end] < 5){
+        is_good = 0;
+    }
+
+    EDGE *helper = e->invers->prev->prev;
+    if (degree[helper->end] < 4){
+        is_good = 0;
+    }
+    if (degree[helper->prev->end] < 4){
+        is_good = 0;
+    }
+    if (degree[helper->end] == 4 && degree[helper->prev->end] == 4){
+        is_good = 0;
+    }
+
+    if (degree[e->prev->invers->next->next->end] < 5){
+        is_good = 0;
+    }
+
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_f(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] != 5){
+        is_good = 0;
+    }
+    if (degree[e->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->end] < 4){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->prev->end] < 4){
+        is_good = 0;
+    }
+    if (degree[e->prev->prev->end] < 5){
+        is_good = 0;
+    }
+
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_g(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] < 5){
+        is_good = 0;
+    }
+    if (degree[e->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 5){
+        is_good = 0;
+    }
+    
+    return is_good;
+}
+
+// some of the check can be skipped in real use
+int is_valid_extend_h(EDGE *e){
+    int is_good = 1;
+    if (degree[e->start] < 6){
+        is_good = 0;
+    }
+    if (degree[e->end] < 4){
+        is_good = 0;
+    }
+    if (degree[e->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->end] < 5){
+        is_good = 0;
+    }
+    if (degree[e->next->next->next->end] < 4){
+        is_good = 0;
+    }
+
+    return is_good;
+}
+
+static int is_canon(int vert){
+    int repr[nv + ne + 1];
+    repr[0] = MAXN + MAXE;
+
+    int colour[nv];
+    for (int i = 0; i < nv; i++){
+        colour[i] = degree[i] + MAXN;
+    }
+
+    EDGE *e = firstedge[vert];
+    for (int i = 0; i < degree[vert]; i++){
+        testcanon_init(e, repr, colour);
+        testcanon_mirror_init(e, repr, colour);
+        e = e->next;
+    }
+
+    for (int i = 0; i < nv; i++){
+        e = firstedge[i];
+        for (int j = 0; j < degree[i]; j++){
+            if (testcanon(e, repr, colour) == 2 || testcanon_mirror(e, repr, colour) == 2){
+                return 0;
+            }
+            e = e->next;
+        }
+    }
+
+    return 1;
+}
+
+static void find_narboni_extensions(
+    EDGE *ext_a[], int* numexta,
+    EDGE *ext_b[], int* numextb,
+    EDGE *ext_c[], int* numextc,
+    EDGE *ext_d[], int* numextd,
+    EDGE *ext_e[], int* numexte,
+    EDGE *ext_f[], int* numextf,
+    EDGE *ext_g[], int* numextg,
+    EDGE *ext_h[], int* numexth
+){
+    repr_found = 0;
+
+    int ka = 0;
+    int kb = 0;
+    int kc = 0;
+    int kd = 0;
+    int ke = 0;
+    int kf = 0;
+    int kg = 0;
+    int kh = 0;
+    EDGE *helper;
+    EDGE *list[4];
+
+    int repr[MAXN + MAXE + 20];
+
+    int colour[nv + 3];
+    for (int i = 0; i < nv; i++){
+        colour[i] = degree[i] + MAXN;
+    }
+    for (int i = 0; i < nv; i++){
+        helper = firstedge[i];
+        for (int j = 0; j < degree[i]; j++){
+            if (is_valid_extend_a(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_a(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+
+                testcanon_init(helper->prev, repr, colour);
+                // this should work. if not, replace with helper->next->next.
+                // do not forget to change the if statement as well 
+                testcanon_mirror_init(helper->prev, repr, colour);
+
+                int is_bad = 0;
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper = helper->next;
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->start)){
+                    ext_a[ka] = helper;
+                    ka++;
+                }
+
+                reduce_a(helper, list);
+            }
+
+            if (is_valid_extend_b(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_b(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+                colour[nv-2] = degree[nv-2] + MAXN;
+                colour[nv-3] = degree[nv-3] + MAXN;
+
+                testcanon_init(helper->next->invers, repr, colour);
+                testcanon_mirror_init(helper->next->invers, repr, colour);
+
+                EDGE *helper2 = helper->next->invers->next;
+
+                int is_bad = 0;
+
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+
+                if (!is_bad){
+                    helper2 = helper->prev->prev->invers;
+                    for (int k = 0; k < 4; k++){
+                        if (testcanon(helper2, repr, colour) == 2){
+                            is_bad = 1;
+                        }
+                        else if (testcanon_mirror(helper2, repr, colour) == 2){
+                            is_bad = 1;
+                        }
+
+                        if (is_bad){
+                            break;
+                        }
+                    }
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->next->end)){
+                    ext_b[kb] = helper;
+                    kb++;
+                }
+
+                reduce_b(helper, list);
+            }
+
+            if (is_valid_extend_c(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_c(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+
+                testcanon_init(helper->next, repr, colour);
+                testcanon_mirror_init(helper->next, repr, colour);
+
+                EDGE *helper2 = helper->next->invers->next;
+
+                int is_bad = 0;
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->next->end)){
+                    ext_c[kc] = helper;
+                    kc++;
+                }
+
+                reduce_c(helper, list);
+            }
+
+            if (is_valid_extend_d(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_d(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+
+                testcanon_init(helper->next->invers->prev, repr, colour);
+                testcanon_mirror_init(helper->next->invers->prev, repr, colour);
+
+                int is_bad = 0;
+                EDGE *helper2 = helper->next->invers;
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->next->end)){
+                    ext_d[kd] = helper;
+                    kd++;
+                }
+
+                reduce_d(helper, list);
+            }
+
+            if (is_valid_extend_e(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_e(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+
+                testcanon_init(helper->next->next->invers, repr, colour);
+                testcanon_mirror_init(helper->next->next->invers, repr, colour);
+
+                int is_bad = 0;
+                EDGE *helper2 = helper->next->next->invers->next;
+
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->next->next->end)){
+                    ext_e[ke] = helper;
+                    ke++;
+                }
+
+                reduce_e(helper, list);
+            }
+
+            if (is_valid_extend_f(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_f(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+                colour[nv-2] = degree[nv-2] + MAXN;
+
+                testcanon_init(helper->next->next->invers, repr, colour);
+                testcanon_mirror_init(helper->next->next->invers, repr, colour);
+
+                int is_bad = 0;
+                EDGE *helper2 = helper->next->next->invers->next;
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->next->next->end)){
+                    ext_f[kf] = helper;
+                    kf++;
+                }
+
+                reduce_f(helper, list);
+            }
+            
+            if (is_valid_extend_g(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_g(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+
+                testcanon_init(helper->next->invers, repr, colour);
+                testcanon_mirror_init(helper->next->invers, repr, colour);
+
+                int is_bad = 0;
+                EDGE *helper2 = helper->next->invers->next;
+                for (int k = 0; k < 3; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+                
+                if (!is_bad && is_vert_canon(colour, helper->next->end)){
+                    ext_g[kg] = helper;
+                    kg++;
+                }
+
+                reduce_g(helper, list);
+            }
+
+            if (is_valid_extend_h(helper)){
+                repr[0] = MAXN + MAXE;
+                
+                extend_h(helper, list);
+                colour[nv-1] = degree[nv-1] + MAXN;
+
+                testcanon_init(helper->next->invers, repr, colour);
+                testcanon_mirror_init(helper->next->invers, repr, colour);
+
+                int is_bad = 0;
+                EDGE *helper2 = helper->next->invers->next;
+                for (int k = 0; k < 4; k++){
+                    if (testcanon(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+                    else if (testcanon_mirror(helper2, repr, colour) == 2){
+                        is_bad = 1;
+                    }
+
+                    if (is_bad){
+                        break;
+                    }
+
+                    helper2 = helper2->next;
+                }
+
+                if (!is_bad && is_vert_canon(colour, helper->next->end)){
+                    ext_h[kh] = helper;
+                    kh++;
+                }
+
+                reduce_h(helper, list);
+            }
+            helper = helper->next;
+        }
+    }
+
+    *numexta = ka;
+    *numextb = kb;
+    *numextc = kc;
+    *numextd = kd;
+    *numexte = ke;
+    *numextf = kf;
+    *numextg = kg;
+    *numexth = kh;
+}
+
+static void
+scannarboni(int nbtot, int nbop){
+    if (nv == maxnv){
+        got_one(nbtot, nbop, 4);
+    }
+
+    if (nv > maxnv){
+        return;
+    }
+
+    int numexta, numextb, numextc, numextd, numexte, numextf, numextg, numexth;
+    EDGE *exta[MAXN], *extb[MAXN], *extc[MAXN], *extd[MAXN], *exte[MAXN],
+         *extf[MAXN], *extg[MAXN], *exth[MAXN]; 
+
+    find_narboni_extensions(exta, &numexta, extb, &numextb, extc, &numextc,
+                            extd, &numextd, exte, &numexte, extf, &numextf,
+                            extg, &numextg, exth, &numexth);
+    
+    EDGE *list[4];
+    printf("numexta: %d\n", numexta);
+    for (int i = 0; i < numexta; i++){
+        extend_a(exta[i], list);
+        if (is_canon(exta[i]->start)){
+            scannarboni(0, 0);
+        }
+        reduce_a(exta[i], list);
+    }
+
+    printf("numextb: %d\n", numextb);
+    for (int i = 0; i < numextb; i++){
+        extend_b(extb[i], list);
+        if (is_canon(extb[i]->next->end)){
+            scannarboni(0, 0);
+        }
+        reduce_b(extb[i], list);
+    }
+
+    printf("numextc: %d\n", numextc);
+    for (int i = 0; i < numextc; i++){
+        extend_c(extc[i], list);
+        if (is_canon(extc[i]->next->end)){
+            scannarboni(0, 0);
+        }
+        reduce_c(extc[i], list);
+    }
+
+    printf("numextd: %d\n", numextd);
+    for (int i = 0; i < numextd; i++){
+        extend_d(extd[i], list);
+        printf("extend_d\n");
+        scannarboni(0, 0);
+        reduce_d(extd[i], list);
+    }
+
+    printf("numexte: %d\n", numexte);
+    for (int i = 0; i < numexte; i++){
+        extend_e(exte[i], list);
+        if (is_canon(exte[i]->next->next->end)){
+            scannarboni(0, 0);
+        }
+        reduce_e(exte[i], list);
+    }
+
+    printf("numextf: %d\n", numextf);
+    for (int i = 0; i < numextf; i++){
+        extend_f(extf[i], list);
+        printf("extend_f\n");
+        scannarboni(0, 0);
+        reduce_f(extf[i], list);
+    }
+
+    printf("numextg: %d\n", numextg);
+    for (int i = 0; i < numextg; i++){
+        extend_g(extg[i], list);
+        if (is_canon(extg[i]->next->end)){
+            scannarboni(0, 0);
+        }
+        reduce_g(extg[i], list);
+    }
+
+    printf("numexth: %d\n", numexth);
+    for (int i = 0; i < numexth; i++){
+        extend_h(exth[i], list);
+        if (is_canon(exth[i]->next->end)){
+            scannarboni(0, 0);
+        }
+        reduce_h(exth[i], list);
+    }
+}
+
+static void
+narboni_dispatch(void){
+    CHECKRANGE(maxnv,"n",9,MAXN);
+
+    if (dswitch) strcpy(outtypename,"cubic graphs");
+    else         strcpy(outtypename,"triangulations");
+
+    open_output_file();
+
+
+    initialize_narboni();
+
+    scannarboni(0, 0);
+}
+
+static void
 #ifdef __GNUC__
 __attribute__((unused))
 #endif
 unused_functions(void)
+
+/****************************************************************************/
 
 /* Don't call this, it is just to avoid warning messages about
  * functions defined but not used. */
@@ -20561,11 +21765,9 @@ main(int argc, char *argv[])
     minpolydeg = -1;
     minpolyconnec = -1;
 
-    before_extend_file = fopen("before_ext.txt", "w");
-    after_extend_file = fopen("after_ext.txt", "w");
-
     if (pswitch && bswitch)                     bipartite_dispatch();
     else if (Fswitch)                           get_graph_from_file();
+    else if (Nswitch)                           narboni_dispatch();
     else if (pswitch && minconnec >= 4)         polytope_c4_dispatch();
     else if (pswitch && minconnec < 4)          polytope_dispatch();
     else if (polygonsize>=0)                    polygon_dispatch();

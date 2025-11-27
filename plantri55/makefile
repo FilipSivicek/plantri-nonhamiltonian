@@ -175,6 +175,11 @@ MP=my_plantri
 my_plantri: ${MY_WORK}/${MP}.c
 	${CC} -o ${MP} ${CFLAGS} ${MY_WORK}/${MP}.c ${LDFLAGS} -ggdb3
 
+EGF=extends_for_gadgets_finder
+plantri_${EGF}: plantri.c ./${MY_WORK}/${EGF}.c
+	${CC} -o ./bin/${EGF} ${CFLAGS} '-DPLUGIN="./${MY_WORK}/${EGF}.c"' plantri.c ${LDFLAGS} -ggdb3
+
+
 fullgen: fullgen.c
 	${CC} -o fullgen ${CFLAGS} fullgen.c ${LDFLAGS}
 
