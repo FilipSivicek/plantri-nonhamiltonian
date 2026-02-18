@@ -1,3 +1,6 @@
+#pragma once
+#include "plantri.c"
+
 /* PLUGIN file to use with plantri.c 
 
    To use this, compile plantri.c using 

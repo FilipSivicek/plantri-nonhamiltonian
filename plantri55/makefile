@@ -13,7 +13,7 @@ tools: plantri_nft plantri_adj4 plantri_maxd plantri_mdcount plantri_ad \
        plantri_deg plantri_fo pccat
 
 plantri: plantri.c
-	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS}
+	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS} -ggdb3
 
 plantri_plantri: plantri.c
 	${CC} -o ./bin/plantri ${CFLAGS} plantri.c ${LDFLAGS}

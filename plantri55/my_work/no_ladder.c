@@ -8,18 +8,8 @@ static int testcanon_mirror_init(EDGE *givenedge, int representation[], int colo
 static void write_alpha(FILE *f, int doflip);
 static void write_graph6(FILE *f, int doflip);
 
-static void rep_printer(int code[], int num_v){
-    int index = 0;
-    int num_vert = 0;
-    while(num_vert < num_v){
-        printf("%d ", code[index]);
-        if (code[index] == 0){
-            num_vert++;
-        }
-        index++;
-    }
-    printf("\n");
-}
+static void rep_file(int code[], int num_v, FILE *f);
+static void rep_printer(int code[], int num_v);
 
 static int my_testcanon_init_v3(EDGE *givenedge, int representation[]){
     if (degree[givenedge->start] + MAXN > (*representation)){
@@ -299,6 +289,8 @@ static int priority_calculator_v3(int code[], int num_v){
 #define FILTER gadgets_priority
 
 static int gadgets_priority(int nbtot, int nbop, int doflip){
+    debugfile2 = fopen("correct.txt", "a");
+
     for (int i = 0; i < nv; i++){
         if (degree[i] == 4){
             EDGE *e = firstedge[i];
@@ -311,28 +303,22 @@ static int gadgets_priority(int nbtot, int nbop, int doflip){
         }
     }
 
-    return TRUE;
-
-    int rep3[MAXE + MAXN];
-    for (int i = 0; i < MAXE + MAXN; i++) {
-        rep3[i] = MAXE + MAXN;
+    int repr[MAXN + MAXE];
+    repr[0] = MAXN + MAXE + 10;
+    int colour[nv];
+    for (int i = 0; i < nv; i++){
+        colour[i] = MAXE + MAXN;
     }
-    
-    my_testcanon_init_v3(firstedge[0], rep3);
     for (int i = 0; i < nv; i++){
         EDGE *e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
-            my_testcanon_init_v3(e, rep3);
-            my_testcanon_init_mirror_v3(e, rep3);
+            testcanon_init(e, repr, colour);
+            testcanon_mirror_init(e, repr, colour);
             e = e->next;
         }
     }
 
-    int res = priority_calculator_v3(rep3, nv);
-    if (res == -1){
-        rep_printer(rep3, nv);
-        return TRUE;
-    }
-
+    rep_printer(repr, nv);
+    
     return FALSE;
 }
