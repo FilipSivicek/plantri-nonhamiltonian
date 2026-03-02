@@ -11,6 +11,8 @@ static void write_graph6(FILE *f, int doflip);
 static void rep_file(int code[], int num_v, FILE *f);
 static void rep_printer(int code[], int num_v);
 
+static void find_canon_code(int* code, int* colour);
+
 static int my_testcanon_init_v3(EDGE *givenedge, int representation[]){
     if (degree[givenedge->start] + MAXN > (*representation)){
         return 0;
@@ -301,5 +303,14 @@ static int gadgets_priority(int nbtot, int nbop, int doflip){
         }
     }
 
+    int repr[MAXN + MAXE];
+    repr[0] = MAXN + MAXE + 10;
+    int colour[nv];
+    for (int i = 0; i < nv; i++){
+        colour[i] = MAXE + MAXN;
+    }
+    
+    find_canon_code(repr, colour);
+    rep_printer(repr, nv);
     return TRUE;
 }

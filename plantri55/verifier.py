@@ -1,7 +1,12 @@
+#!/usr/bin/env python3
+
 narboni = open("incorrect.txt", "r")
 
 hs = dict()
 for line in narboni:
+    if (line in hs):
+        print("same graph generated multiple times: ", end = "")
+        print(line)
     hs[line] = 0
 
 no_ladder = open("correct.txt", "r")
