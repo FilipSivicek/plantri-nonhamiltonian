@@ -21396,7 +21396,7 @@ static void find_narboni_extensions(
     EDGE *ext_c[], int* numextc,
     EDGE *ext_d[], int* numextd,
     EDGE *ext_e[], int* numexte,
-    //EDGE *ext_em[], int* numextem,
+    EDGE *ext_em[], int* numextem,
     EDGE *ext_f[], int* numextf,
     EDGE *ext_g[], int* numextg,
     EDGE *ext_h[], int* numexth
@@ -21408,7 +21408,7 @@ static void find_narboni_extensions(
     int kc = 0;
     int kd = 0;
     int ke = 0;
-    //int kem = 0;
+    int kem = 0;
     int kf = 0;
     int kg = 0;
     int kh = 0;
@@ -21434,6 +21434,13 @@ static void find_narboni_extensions(
         helper = firstedge[i];
         int mom_degree = degree[i];
         for (int j = 0; j < mom_degree; j++){
+            write_repr[0] = MAXN + MAXE + 10;
+            if (nv == maxnv - 1){
+                find_canon_code(write_repr, colour);
+                fprintf(outfile, "\nfather graph for extend_a:\n");
+                rep_printer(write_repr, nv);
+            }
+
             if (is_valid_extend_a(helper)){
                 repr[0] = MAXN + MAXE + 10;
                 write_repr[0] = MAXN + MAXE + 10;
@@ -21692,8 +21699,8 @@ static void find_narboni_extensions(
 
                 int is_bad = 0;
                 if (!is_bad && is_vert_canon(colour, helper->prev->prev->end)){
-                    //ext_em[kem] = helper;
-                    //kem++;
+                    ext_em[kem] = helper;
+                    kem++;
                     if (nv == maxnv) fprintf(outfile, "passed is_vert_canon in extend_em\n");
                 }
 
@@ -21823,7 +21830,7 @@ static void find_narboni_extensions(
     *numextc = kc;
     *numextd = kd;
     *numexte = ke;
-    //*numextem = kem;
+    *numextem = kem;
     *numextf = kf;
     *numextg = kg;
     *numexth = kh;
@@ -21868,7 +21875,7 @@ scannarboni(int nbtot, int nbop){
 
     find_narboni_extensions(exta, &numexta, extb, &numextb, extc, &numextc,
                             extd, &numextd, exte, &numexte, 
-                            //extem, &numextem,
+                            extem, &numextem,
                             extf, &numextf, extg, &numextg, exth, &numexth);
     
     EDGE *list[4];
@@ -21929,7 +21936,7 @@ scannarboni(int nbtot, int nbop){
         reduce_e(exte[i], list);
     }
 
-    /*for (int i = 0; i < numextem; i++){
+        for (int i = 0; i < numextem; i++){
         extend_e_mirror(extem[i], list);
 
         if (nv == maxnv){
