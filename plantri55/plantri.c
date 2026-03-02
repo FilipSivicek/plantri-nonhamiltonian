@@ -20415,6 +20415,17 @@ get_graph_from_file(void)
 static int all_repr[MAXE][MAXN + MAXE];
 static int repr_found;
 
+static void find_canon_code(int* code, int* colour){
+    for (int i = 0; i < nv; i++){
+        EDGE *e = firstedge[i];
+        for (int j = 0; j < degree[i]; j++){
+            testcanon_init(e, code, colour);
+            testcanon_mirror_init(e, code, colour);
+            e = e->next;
+        }
+    }
+};
+
 static void rep_printer(int code[], int num_v){
     int index = 0;
     int num_vert = 0;
@@ -21128,37 +21139,57 @@ int is_valid_extend_d(EDGE *e){
 
 // some of the check can be skipped in real use
 int is_valid_extend_e(EDGE *e){
+    if (nv == maxnv - 1) fprintf(outfile, "is_valid_extend_e e->start: %d\n", e->start);
+    if (nv == maxnv - 1){
+        for (int i = 0; i < nv; i++){
+            fprintf(outfile, "degree[%d] = %d\n", i, degree[i]);
+        }
+    }
+
     int is_good = 1;
     if (degree[e->start] != 4){
         is_good = 0;
+        fprintf(outfile, "failed at degree[e->start] != 4\n");
     }
     if (degree[e->end] != 5){
         is_good = 0;
+        fprintf(outfile, "failed at degree[e->end] != 5\n");
     }
     if (degree[e->next->end] != 5){
         is_good = 0;
+        fprintf(outfile, "failed at degree[e->next->end] != 5\n");
     }
     if (degree[e->next->next->end] < 6){
         is_good = 0;
+        fprintf(outfile, "failed at degree[e->next->next->end] < 6\n");
     }
     if (degree[e->prev->end] < 5){
         is_good = 0;
+        fprintf(outfile, "failed at degree[e->prev->end] < 5\n");
     }
 
-    EDGE *helper = e->invers->next->next;
+    /*EDGE *helper = e->invers->next->next;
+    fprintf(outfile, "*helper = e->invers->next->next");
     if (degree[helper->end] < 4){
         is_good = 0;
+        fprintf(outfile, "failed at degree[helper->end] < 4");
     }
     if (degree[helper->next->end] < 4){
         is_good = 0;
+        fprintf(outfile, "failed at degree[helper->next->end] < 4");
     }
     if (degree[helper->end] == 4 && degree[helper->next->end] == 4){
         is_good = 0;
-    }
+        fprintf(outfile, "failed at degree[helper->end] == 4 && degree[helper->next->end] == 4");
+    }*/
 
     if (degree[e->next->invers->prev->prev->end] < 5){
         is_good = 0;
+        fprintf(outfile, "failed at degree[e->next->invers->prev->prev->end] < 5\n");
+        fprintf(outfile, "e->next->invers->prev->prev->end = %d\n", e->next->invers->prev->prev->end);
     }
+
+    if (nv == maxnv - 1) fprintf(outfile, "is_good: %d\n", is_good);
 
     return is_good;
 }
@@ -21303,9 +21334,23 @@ static int is_canon_oriented(int vert, int orient){
         colour[i] = MAXE + MAXN;
     }
 
+    int write_repr[MAXE + MAXN];
+    for(int j = 0; j < MAXN + MAXE; j++){
+        write_repr[j] = MAXN + MAXE + 10;
+    }
+        
+
+    if (nv == maxnv){
+        find_canon_code(write_repr, colour);
+        fprintf(outfile, "graph in is_canon_orien\n");
+        fprintf(outfile, "vertex number %d\n", vert);
+        rep_printer(write_repr, nv);
+    }
+
+
     EDGE *e = firstedge[vert];
     for (int i = 0; i < degree[vert]; i++){
-        if (orient == 1){
+        if (orient == 0){
             testcanon_init(e, repr, colour);
         }
         else {
@@ -21317,9 +21362,27 @@ static int is_canon_oriented(int vert, int orient){
     for (int i = 0; i < nv; i++){
         e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
-            if (testcanon(e, repr, colour) == 2 || testcanon_mirror(e, repr, colour) == 2){
-                return 0;
+            if (testcanon(e, repr, colour) == 2){
+                write_repr[0] = MAXN + MAXE + 10;
+                fprintf(outfile, "killing this graph: degree = %d, degree[end] = %d\n", degree[i], degree[e->end]);
+                fprintf(outfile, "better vertex number %d\n", e->start);
+                rep_printer(repr, nv);
+
+                testcanon_init(e, write_repr, colour);
+                rep_printer(write_repr, nv);
             }
+
+            if (testcanon_mirror(e, repr, colour) == 2){
+                write_repr[0] = MAXN + MAXE + 10;
+                fprintf(outfile, "mirror killing this graph: degree = %d, degree[end] = %d\n", degree[i], degree[e->end]);
+                fprintf(outfile, "better vertex number %d\n", e->start);
+                rep_printer(repr, nv);
+                
+                testcanon_mirror_init(e, write_repr, colour);
+                rep_printer(write_repr, nv);
+            }
+
+            if (testcanon(e, repr, colour) == 2 || testcanon_mirror(e, repr, colour) == 2){return 0;}
             e = e->next;
         }
     }
@@ -21333,7 +21396,7 @@ static void find_narboni_extensions(
     EDGE *ext_c[], int* numextc,
     EDGE *ext_d[], int* numextd,
     EDGE *ext_e[], int* numexte,
-    EDGE *ext_em[], int* numextem,
+    //EDGE *ext_em[], int* numextem,
     EDGE *ext_f[], int* numextf,
     EDGE *ext_g[], int* numextg,
     EDGE *ext_h[], int* numexth
@@ -21345,7 +21408,7 @@ static void find_narboni_extensions(
     int kc = 0;
     int kd = 0;
     int ke = 0;
-    int kem = 0;
+    //int kem = 0;
     int kf = 0;
     int kg = 0;
     int kh = 0;
@@ -21353,9 +21416,11 @@ static void find_narboni_extensions(
     EDGE *list[4];
 
     int repr[MAXN + MAXE];
+    int write_repr[MAXN + MAXE];
 
     for (int i = 0; i < MAXN + MAXE; i++){
         repr[i] = MAXN + MAXE + 10;
+        write_repr[i] = MAXN + MAXE + 10;
     }
 
     int colour[nv + 4];
@@ -21363,15 +21428,25 @@ static void find_narboni_extensions(
         colour[i] = MAXN + MAXE;
     }
 
-    for (int i = 0; i < nv; i++){
+    int mom_nv = nv;
+
+    for (int i = 0; i < mom_nv; i++){
         helper = firstedge[i];
-        for (int j = 0; j < degree[i]; j++){
+        int mom_degree = degree[i];
+        for (int j = 0; j < mom_degree; j++){
             if (is_valid_extend_a(helper)){
                 repr[0] = MAXN + MAXE + 10;
+                write_repr[0] = MAXN + MAXE + 10;
                 
                 extend_a(helper, list);
                 for (int i = 0; i < nv; i++){
                     colour[i] = MAXE + MAXN;
+                }
+
+                if (nv == maxnv){
+                    find_canon_code(write_repr, colour);
+                    fprintf(outfile, "\ngraphs created by extend_a:\n");
+                    rep_printer(write_repr, nv);
                 }
     
 
@@ -21537,16 +21612,35 @@ static void find_narboni_extensions(
                 reduce_d(helper, list);
             }
 
+            write_repr[0] = MAXN + MAXE + 10;
+            if (nv == maxnv - 1){
+                find_canon_code(write_repr, colour);
+                fprintf(outfile, "\nfather graph for extend_e:\n");
+                rep_printer(write_repr, nv);
+            }
             if (is_valid_extend_e(helper)){
                 repr[0] = MAXN + MAXE + 10;
+                write_repr[0] = MAXN + MAXE + 10;
                 
                 extend_e(helper, list);
                 for (int i = 0; i < nv; i++){
                     colour[i] = MAXE + MAXN;
                 }
 
+                if (nv == maxnv){
+                    find_canon_code(write_repr, colour);
+                    fprintf(outfile, "\ngraphs created by extend_e:\n");
+                    rep_printer(write_repr, nv);
+                    fprintf(outfile, "helper->start: %d\n", helper->start);
+                }
+
+
                 testcanon_init(helper->next->next->invers, repr, colour);
+                if (nv == maxnv) rep_printer(repr, nv);
+
+                repr[0] = MAXN + MAXE + 10;
                 testcanon_mirror_init(helper->next->next->invers, repr, colour);
+                if (nv == maxnv) rep_printer(repr, nv);
 
                 int is_bad = 0;
                 /*
@@ -21570,6 +21664,7 @@ static void find_narboni_extensions(
                 if (!is_bad && is_vert_canon(colour, helper->next->next->end)){
                     ext_e[ke] = helper;
                     ke++;
+                    if (nv == maxnv) fprintf(outfile, "passed is_vert_canon in extend_e\n");
                 }
 
                 reduce_e(helper, list);
@@ -21577,6 +21672,7 @@ static void find_narboni_extensions(
 
             if (is_valid_extend_e_mirror(helper)){
                 repr[0] = MAXN + MAXE + 10;
+                write_repr[0] = MAXN + MAXE + 10;
                 
                 extend_e_mirror(helper, list);
                 for (int i = 0; i < nv; i++){
@@ -21584,19 +21680,10 @@ static void find_narboni_extensions(
                 }
 
                 if (nv == maxnv){
-                    for (int i = 0; i < nv; i++){
-                        EDGE *e = firstedge[i];
-                        for (int j = 0; j < degree[i]; j++){
-                            testcanon_init(e, repr, colour);
-                            testcanon_mirror_init(e, repr, colour);
-                            e = e->next;
-                        }
-                    }
+                    find_canon_code(write_repr, colour);
                 
                     fprintf(outfile, "\ngraphs created by extend_e_mirror:\n");
-                    write_graph6(outfile, 0);
-
-                    rep_printer(repr, nv);
+                    rep_printer(write_repr, nv);
                 }
 
 
@@ -21605,8 +21692,9 @@ static void find_narboni_extensions(
 
                 int is_bad = 0;
                 if (!is_bad && is_vert_canon(colour, helper->prev->prev->end)){
-                    ext_em[kem] = helper;
-                    kem++;
+                    //ext_em[kem] = helper;
+                    //kem++;
+                    if (nv == maxnv) fprintf(outfile, "passed is_vert_canon in extend_em\n");
                 }
 
                 reduce_e_mirror(helper, list);
@@ -21735,7 +21823,7 @@ static void find_narboni_extensions(
     *numextc = kc;
     *numextd = kd;
     *numexte = ke;
-    *numextem = kem;
+    //*numextem = kem;
     *numextf = kf;
     *numextg = kg;
     *numexth = kh;
@@ -21780,7 +21868,7 @@ scannarboni(int nbtot, int nbop){
 
     find_narboni_extensions(exta, &numexta, extb, &numextb, extc, &numextc,
                             extd, &numextd, exte, &numexte, 
-                            extem, &numextem,
+                            //extem, &numextem,
                             extf, &numextf, extg, &numextg, exth, &numexth);
     
     EDGE *list[4];
@@ -21820,20 +21908,50 @@ scannarboni(int nbtot, int nbop){
     //printf("numexte: %d\n", numexte);
     for (int i = 0; i < numexte; i++){
         extend_e(exte[i], list);
-        if (is_canon_oriented(exte[i]->next->next->end, 1)){
+
+        if (nv == maxnv){
+            int colour[MAXE + MAXN];
+            int write_repr[MAXE + MAXN];
+            for(int j = 0; j < MAXN + MAXE; j++){
+                colour[j] = MAXN + MAXE;
+                write_repr[j] = MAXN + MAXE + 10;
+            }
+
+            find_canon_code(write_repr, colour);
+
+            fprintf(outfile, "graph in scannarboni from extend_e\n");
+            rep_printer(write_repr, nv);
+        }
+
+        if (is_canon(exte[i]->next->next->end)){
             scannarboni(0, 0);
         }
         reduce_e(exte[i], list);
     }
 
-    for (int i = 0; i < numextem; i++){
+    /*for (int i = 0; i < numextem; i++){
         extend_e_mirror(extem[i], list);
+
+        if (nv == maxnv){
+            int colour[MAXE + MAXN];
+            int write_repr[MAXE + MAXN];
+            for(int j = 0; j < MAXN + MAXE; j++){
+                colour[j] = MAXN + MAXE;
+                write_repr[j] = MAXN + MAXE + 10;
+            }
+
+            find_canon_code(write_repr, colour);
+
+            fprintf(outfile, "graph in scannarboni from extend_em\n");
+            rep_printer(write_repr, nv);
+        }
+
         if (is_canon_oriented(extem[i]->prev->prev->end, 0)){
             scannarboni(0, 0);
         }
 
         reduce_e_mirror(extem[i], list);
-    }
+    }//*/
 
     //printf("numextf: %d\n", numextf);
     for (int i = 0; i < numextf; i++){

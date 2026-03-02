@@ -16,6 +16,9 @@ for line in no_ladder:
     number += 1
 
 for item in hs:
-    print(hs[item], end = " ")
+    if (hs[item] == 0):
+        print("halucinated graph: " + item)
+    if (hs[item] > 1):
+        print("multiple graphs match same graph: " + item)
 
 print("finished")

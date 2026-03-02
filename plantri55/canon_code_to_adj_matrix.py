@@ -1,9 +1,20 @@
+#!/usr/bin/env python3
+    
 canon_code = list(map(int,input().split()))
 
 nv = 0
 for i in canon_code:
     if i == 0:
         nv += 1
+
+index = 0
+for i in range(nv):
+    print(str(i + 1) + ".: ", end = "")
+    while (canon_code[index] != 0):
+        print(canon_code[index], end = " ")
+        index += 1
+    print(canon_code[index])
+    index += 1
 
 adj_matrix = []
 for i in range(nv):
