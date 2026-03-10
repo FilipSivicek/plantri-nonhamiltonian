@@ -20638,33 +20638,15 @@ static void reduce_a_mirror(EDGE *e, EDGE *list[]){
 // at the end, v1 has valence 4, v2 has valence 5 and v3 has valence 4.
 // e points at vertex with valence 6+, e->next points at vertex with valence 4.
 static void extend_b(EDGE *e, EDGE* list[]){
-    EDGE* list1[2];
-    EDGE* list2[2];
-
     extend3(e->next->next);
-    extend4(e->next, list1);
-    extend4(e, list2);
-    
-    list[0] = list1[0];
-    list[1] = list1[1];
-    
-    list[2] = list2[0];
-    list[3] = list2[1];
+    extend4(e->next, list);
+    extend4(e, list + 2);
 }
 
 // invers operation to extend_b. 
 static void reduce_b(EDGE *e, EDGE *list[]){
-    EDGE *list1[2];
-    EDGE *list2[2];
-
-    list1[0] = list[0];
-    list1[1] = list[1];
-    
-    list2[0] = list[2];
-    list2[1] = list[3];
-    
-    reduce4(e, list2);
-    reduce4(e->next, list1);
+    reduce4(e, list + 2);
+    reduce4(e->next, list);
     reduce3(e->next->next);
 }
 
@@ -20772,16 +20754,20 @@ static void reduce_e_mirror(EDGE *e, EDGE *list[]){
    In list[0..3] the deleted edges are stored. This list must be handed 
    to reduce_f */
 static void extend_f(EDGE *e, EDGE *list[]){
-    extend3(e->next->next);
+    //extend3(e->next->next);
+    //extend5(e, list);
     extend5(e, list);
+    extend4(e->next->next->invers, list + 4);
 }
 
 /* The e->start should have valence 5, e->end valence 6+, e->next->end valence 5,
    e->next->next->end valence 4.
    The inverse operation to extend_f.*/
 static void reduce_f(EDGE *e, EDGE *list[]){
+    //reduce5(e, list);
+    //reduce3(e->next->next);
+    reduce4(e->prev->prev->invers, list + 4);
     reduce5(e, list);
-    reduce3(e->next->next);
 }
 
 /* Verifies, if e is valid place for extend_g.
@@ -21210,7 +21196,7 @@ static void find_narboni_extensions(
     int kg = 0;
     int kh = 0;
     EDGE *helper;
-    EDGE *list[4];
+    EDGE *list[6];
 
     int skip_h = 0;
     int count_fours = 0;
@@ -21284,7 +21270,16 @@ static void find_narboni_extensions(
                 testcanon_first_init(helper->next->invers->prev, repr, colour);
                 testcanon_mirror_init(helper->next->invers, repr, colour);    
                 // check, if in other 4 code is not better
-                if (new_is_vert_canon(colour, repr, helper->next->end, 3)){
+
+                int is_bad = 0;
+                if (testcanon(helper->prev->prev->invers, repr, colour) == 2){
+                    is_bad = 1;
+                }
+                if (testcanon_mirror(helper->prev->prev->invers->next, repr, colour) == 2){
+                    is_bad = 1;
+                }
+
+                if (!is_bad && new_is_vert_canon(colour, repr, helper->next->end, 3)){
                     ext_b[kb] = helper;
                     kb++;
                 }
@@ -21472,7 +21467,7 @@ scannarboni(int nbtot, int nbop){
                             extg, &numextg, 
                             exth, &numexth);
 
-    EDGE *list[4];
+    EDGE *list[6];
     for (int i = 0; i < numexta; i++){
         extend_a(exta[i], list);
         if (is_canon(exta[i]->start)){
@@ -21492,8 +21487,7 @@ scannarboni(int nbtot, int nbop){
     for (int i = 0; i < numextb; i++){
         extend_b(extb[i], list);
         //if (canon(colour, numbering, &xnbtot, &xnbop)){
-            //scannarboni(xnbtot, xnbop);
-        //}
+            //scannarboni(xnbtot, xnbop);}
         if (is_canon(extb[i]->next->end)) scannarboni(nbtot, nbop);
         reduce_b(extb[i], list);
     }
