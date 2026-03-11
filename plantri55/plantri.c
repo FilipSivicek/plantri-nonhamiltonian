@@ -1685,7 +1685,7 @@ canon(int lcolour[], EDGE *can_numberings[][MAXE], int *nbtot, int *nbop)
     int i, last_vertex, test;
     int minstart, maxend; /* (minstart,maxend) will be the chosen colour 
                                 pair of an edge */
-    EDGE *startlist_last[5], *startlist[5*MAXN], *run, *end;
+    EDGE *startlist_last[5], *startlist[7*MAXN], *run, *end;
     int list_length_last, list_length;
     int representation[MAXE];
     EDGE *numblist[MAXE], *numblist_mirror[MAXE]; /* lists of edges where 
@@ -20544,17 +20544,27 @@ static int is_new_repr(int repr[], int size){
 }
 
 static int is_vert_canon(int colour[], int vert, int size){
-    repr[0] = MAXN + MAXE + 10;
     for (int i = 0; i < nv; i++){
         if (degree[i] < degree[vert]){
             return 0;
         }
     }
-
+    
     EDGE *e = firstedge[vert];
+    int min_degree = MAXN + 10;
     for (int i = 0; i < degree[vert]; i++){
-        testcanon_init(e, repr, colour);
-        testcanon_mirror_init(e, repr, colour);
+        if (degree[e->end] < min_degree){
+            min_degree = degree[e->end];
+        }
+        e = e->next;
+    }
+    
+    repr[0] = MAXN + MAXE + 10;
+    for (int i = 0; i < degree[vert]; i++){
+        if (degree[e->end] == min_degree){
+            testcanon_init(e, repr, colour);
+            testcanon_mirror_init(e, repr, colour);
+        }
         e = e->next;
     }
 
@@ -20638,33 +20648,15 @@ static void reduce_a_mirror(EDGE *e, EDGE *list[]){
 // at the end, v1 has valence 4, v2 has valence 5 and v3 has valence 4.
 // e points at vertex with valence 6+, e->next points at vertex with valence 4.
 static void extend_b(EDGE *e, EDGE* list[]){
-    EDGE* list1[2];
-    EDGE* list2[2];
-
     extend3(e->next->next);
-    extend4(e->next, list1);
-    extend4(e, list2);
-    
-    list[0] = list1[0];
-    list[1] = list1[1];
-    
-    list[2] = list2[0];
-    list[3] = list2[1];
+    extend4(e->next, list);
+    extend4(e, list+2);
 }
 
 // invers operation to extend_b. 
 static void reduce_b(EDGE *e, EDGE *list[]){
-    EDGE *list1[2];
-    EDGE *list2[2];
-
-    list1[0] = list[0];
-    list1[1] = list[1];
-    
-    list2[0] = list[2];
-    list2[1] = list[3];
-    
-    reduce4(e, list2);
-    reduce4(e->next, list1);
+    reduce4(e, list+2);
+    reduce4(e->next, list);
     reduce3(e->next->next);
 }
 
@@ -21097,32 +21089,6 @@ static int skip_gadget_g(EDGE* e){
 
 static int skip_gadget_h(EDGE* e){}
 
-
-
-static int new_is_canon(int vert, int place){
-    for (int i = 0; i < ne; i++){
-        repr[i] = all_repr3[place][i];
-    }
-    
-    EDGE *e;
-    for (int i = 0; i < nv; i++){
-        e = firstedge[i];
-        for (int j = 0; j < degree[i]; j++){
-            if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0 && skip_gadget_g(e) == 0){
-                if (testcanon(e, repr, colour) == 2){
-                    return 0;
-                }
-                if (testcanon_mirror(e, repr, colour) == 2){
-                    return 0;
-                }
-            }
-            e = e->next;
-        }
-    }
-
-    return 1;
-}
-
 static int is_canon(int vert){
     repr[0] = MAXE + MAXN + 10;
 
@@ -21136,12 +21102,14 @@ static int is_canon(int vert){
     for (int i = 0; i < nv; i++){
         e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
-            if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0 && skip_gadget_g(e) == 0){
-                if (testcanon(e, repr, colour) == 2){
-                    return 0;
-                }
-                if (testcanon_mirror(e, repr, colour) == 2){
-                    return 0;
+            if (degree[e->start] == 4 && degree[e->end] == 5){
+                if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0 && skip_gadget_g(e) == 0){
+                    if (testcanon(e, repr, colour) == 2){
+                        return 0;
+                    }
+                    if (testcanon_mirror(e, repr, colour) == 2){
+                        return 0;
+                    }
                 }
             }
             e = e->next;
@@ -21168,17 +21136,166 @@ static int is_canon_oriented(int vert, int orient){
     for (int i = 0; i < nv; i++){
         e = firstedge[i];
         for (int j = 0; j < degree[i]; j++){
-            if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0 && skip_gadget_g(e) == 0){
-                if (testcanon(e, repr, colour) == 2){
-                    return 0;
-                }
-                if (testcanon_mirror(e, repr, colour) == 2){
-                    return 0;
+            if (degree[e->start] == 4 && degree[e->end] == 5){
+                if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0 && skip_gadget_g(e) == 0){
+                    if (testcanon(e, repr, colour) == 2){
+                        return 0;
+                    }
+                    if (testcanon_mirror(e, repr, colour) == 2){
+                        return 0;
+                    }
                 }
             }
             e = e->next;
         }
     }
+
+    return 1;
+}
+
+static int 
+my_canon(int lcolour[], EDGE *can_numberings[][MAXE], int vert, int *nbtot, int *nbop)
+
+/* Checks whether the last vertex (number: nv-1) is canonical or not. 
+   Returns 1 if yes, 0 if not. One of the criterions a canonical vertex 
+   must fulfill is that its colour is minimal.
+
+   IT IS ASSUMED that the values of the colour function are positive
+   and at most INT_MAX-MAXN.
+ 
+   A possible starting edge for the construction of a representation is 
+   one with lexicographically minimal colour pair (start,INT_MAX-end).
+   In can_numberings[][] the canonical numberings are stored as sequences 
+   of oriented edges.  For every 0 <= i,j < *nbtot and every 
+   0 <= k < ne the edges can_numberings[i][k] and can_numberings[j][k] can 
+   be mapped onto each other by an automorphism. The first 
+   *nbop numberings are orientation preserving while 
+   the rest is orientation reversing.
+
+   In case of only 1 automorphism, in can_numberings[0][0] the "canonical" 
+   edge is given.  It is one edge emanating at the canonical vertex. The 
+   rest of the numbering is not given. 
+
+   In case of nontrivial automorphisms, can[0] starts with a list of edges 
+   adjacent to nv-1. In case of an orientation preserving numbering the deges 
+   are listed in ->next direction, otherwise in ->prev direction.
+
+   Works OK if at least one vertex has valence >= 3. Otherwise some numberings 
+   are computed twice, since changing the orientation (the cyclic order around 
+   each vertex) doesn't change anything */
+{
+    int i, last_vertex, test;
+    int minstart, maxend; /* (minstart,maxend) will be the chosen colour 
+                                pair of an edge */
+    EDGE *startlist_last[5], *startlist[7*MAXN], *run, *end;
+    int list_length_last, list_length;
+    int representation[MAXE];
+    EDGE *numblist[MAXE], *numblist_mirror[MAXE]; /* lists of edges where 
+                        starting gives a canonical representation */
+    int numbs = 1, numbs_mirror = 0;
+    int colour[MAXN];
+
+    for (i=0; i<nv; i++) colour[i]=lcolour[i]+MAXN;
+                               /* to distinguish colours from vertices */
+    if (vert == -1){
+        last_vertex = nv-1;
+    }
+    else {
+        last_vertex = vert;
+    }
+    minstart = degree[last_vertex];
+
+/* determine the smallest possible end for the vertex "last_vertex" */
+
+    list_length_last = 1; startlist_last[0] = end = firstedge[last_vertex];
+    maxend = degree[end->end];
+
+    for (run = end->next; run != end; run = run->next)
+      { if (degree[run->end] < maxend)
+          { startlist_last[0] = run; 
+            list_length_last = 1; maxend = degree[run->end];}
+        else if (degree[run->end] == maxend)
+          { startlist_last[list_length_last] = run; list_length_last++; }
+      }
+
+/* Now we know the pair that SHOULD be minimal and we can determine a list 
+   of all edges with this colour pair. If a new pair is found that is even 
+   smaller, we can return 0 at once */
+
+    list_length = 0;
+
+    for (i = 0; i < last_vertex; i++) 
+      { if (degree[i] < minstart) return 0;
+        if (degree[i] == minstart)
+          { run = end = firstedge[i];
+            do
+            {
+              if (degree[run->end] < maxend) return 0;
+              if (degree[run->end] == maxend)
+                { startlist[list_length] = run; list_length++; }
+              run = run->next;
+            } while (run != end);
+          }
+      }
+
+/* OK -- so there is no smaller pair and now we have to determine the 
+   smallest representation around vertex "last_vertex": */
+
+    testcanon_first_init(startlist_last[0], representation, colour);
+    numblist[0] = startlist_last[0];
+    test = testcanon_mirror_init(startlist_last[0], representation, colour);
+    if (test == 1) 
+      { numbs_mirror = 1; numblist_mirror[0] = startlist_last[0]; }
+    else if (test == 2)  
+      { numbs_mirror = 1; numbs = 0; 
+        numblist_mirror[0] = startlist_last[0]; }
+
+    for (i = 1; i < list_length_last; i++)
+      { test = testcanon_init(startlist_last[i], representation, colour);
+        if (test == 1) { numblist[numbs] = startlist_last[i]; numbs++; }
+        else if (test == 2) 
+          { numbs_mirror = 0; numbs = 1; numblist[0] = startlist_last[i]; }
+            test = testcanon_mirror_init(startlist_last[i], 
+                                                     representation, colour);
+          if (test == 1)  
+            { numblist_mirror[numbs_mirror] = startlist_last[i]; 
+              numbs_mirror++; }
+          else if (test == 2) 
+            { numbs_mirror = 1; numbs = 0; 
+              numblist_mirror[0] = startlist_last[i]; }
+      }
+
+/* Now we know the best representation we can obtain starting at last_vertex. 
+   Now we will check all the others. We can return 0 at once if we find a 
+   better one */
+
+    for (i = 0; i < list_length; i++)
+      {
+        if (skip_edge_gadget_e(startlist[i]) == 0 && 
+        skip_edge_gadget_e_mirror(startlist[i]) == 0 && skip_gadget_g(startlist[i]) == 0){
+            test = testcanon(startlist[i], representation, colour);
+            if (test == 1) { numblist[numbs] = startlist[i]; numbs++; }
+            else if (test == 2) return 0;
+            test = testcanon_mirror(startlist[i], representation, colour);
+            if (test == 1) 
+              { numblist_mirror[numbs_mirror] = startlist[i]; numbs_mirror++; }
+            else if (test == 2) return 0;
+        }
+      }
+
+    *nbop = numbs;
+    *nbtot = numbs+numbs_mirror;
+
+    /*if (*nbtot>1)
+      { for (i = 0; i < numbs; i++) 
+          construct_numb(numblist[i], can_numberings[i]); 
+        for (i = 0; i < numbs_mirror; i++, numbs++) 
+          construct_numb_mirror(numblist_mirror[i],can_numberings[numbs]);
+      }
+    else 
+      { if (numbs) can_numberings[0][0] = numblist[0];
+        else can_numberings[0][0] = numblist_mirror[0]; }
+    //*/
 
     return 1;
 }
@@ -21475,41 +21592,34 @@ scannarboni(int nbtot, int nbop){
     EDGE *list[4];
     for (int i = 0; i < numexta; i++){
         extend_a(exta[i], list);
-        if (is_canon(exta[i]->start)){
-            scannarboni(nbtot, nbop);
-        }
+        if (is_canon(exta[i]->start)){scannarboni(nbtot, nbop);}
+        //if (my_canon(colour, numbering, exta[i]->start, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         reduce_a(exta[i], list);
     }
 
     for (int i = 0; i < numextam; i++){
         extend_a_mirror(extam[i], list);
-        if(is_canon(extam[i]->start)){
-            scannarboni(nbtot, nbop);
-        }
+        if(is_canon(extam[i]->start)){scannarboni(nbtot, nbop);}
+        //if (my_canon(colour, numbering, extam[i]->start, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         reduce_a_mirror(extam[i], list);
     }
 
     for (int i = 0; i < numextb; i++){
         extend_b(extb[i], list);
-        //if (canon(colour, numbering, &xnbtot, &xnbop)){
-            //scannarboni(xnbtot, xnbop);
-        //}
-        if (is_canon(extb[i]->next->end)) scannarboni(nbtot, nbop);
+        if (my_canon(colour, numbering, extb[i]->next->end, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         reduce_b(extb[i], list);
     }
 
     for (int i = 0; i < numextc; i++){
         extend_c(extc[i], list);
-        //if (is_canon(extc[i]->next->end)) scannarboni(nbtot, nbop);
-        if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, numbering, -1, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         
         reduce_c(extc[i], list);
     }
 
     for (int i = 0; i < numextd; i++){
         extend_d(extd[i], list);
-        // if (is_canon(extd[i]->next->end)) scannarboni(nbtot, nbop);
-        if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, numbering, -1, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         
         reduce_d(extd[i], list);
     }
@@ -21517,7 +21627,6 @@ scannarboni(int nbtot, int nbop){
     for (int i = 0; i < numexte; i++){
         extend_e(exte[i], list);
         if (is_canon_oriented(exte[i]->next->next->end, 1))scannarboni(nbtot, nbop);
-        //if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         
         reduce_e(exte[i], list);
     }
@@ -21525,31 +21634,27 @@ scannarboni(int nbtot, int nbop){
     for (int i = 0; i < numextem; i++){
         extend_e_mirror(extem[i], list);
         if (is_canon_oriented(extem[i]->prev->prev->end, 0))scannarboni(nbtot, nbop);
-        //if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         
         reduce_e_mirror(extem[i], list);
     }//*/
 
     for (int i = 0; i < numextf; i++){
         extend_f(extf[i], list);
-        if (is_canon(extf[i]->next->next->end))scannarboni(nbtot, nbop);
-        //if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, numbering, extf[i]->next->next->end, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
         
         reduce_f(extf[i], list);
     }
 
     for (int i = 0; i < numextg; i++){
         extend_g(extg[i], list);
-        //if (is_canon(extg[i]->next->end))scannarboni(nbtot, nbop);
-        if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, numbering, -1, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
 
         reduce_g(extg[i], list);
     }
 
     for (int i = 0; i < numexth; i++){
         extend_h(exth[i], list);
-        //if (is_canon(exth[i]->next->end)) scannarboni(nbtot, nbop);
-        if (canon(colour, numbering, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, numbering, -1, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
 
         reduce_h(exth[i], list);
     }
