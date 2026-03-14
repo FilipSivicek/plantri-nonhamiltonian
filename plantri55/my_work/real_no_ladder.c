@@ -288,9 +288,9 @@ static int priority_calculator_v3(int code[], int num_v){
     return -1;
 }
 
-#define FILTER gadgets_priority
+#define FILTER no_ladder
 
-static int gadgets_priority(int nbtot, int nbop, int doflip){
+static int no_ladder(int nbtot, int nbop, int doflip){
     for (int i = 0; i < nv; i++){
         if (degree[i] == 4){
             EDGE *e = firstedge[i];
@@ -310,7 +310,5 @@ static int gadgets_priority(int nbtot, int nbop, int doflip){
         colour[i] = MAXE + MAXN;
     }
     
-    find_canon_code(repr, colour);
-    rep_printer(repr, nv);
     return TRUE;
 }
