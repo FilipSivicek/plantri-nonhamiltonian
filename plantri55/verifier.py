@@ -24,12 +24,24 @@ with open("missing_graphs.txt", "w") as f:
 
         number += 1
 
-for item in hs:
-    if (hs[item] == 0):
-        print("halucinated graph: " + item)
-    if (hs[item] > 1):
-        print("multiple graphs match same graph: " + item)
+halucinated = False
+multiple = False
+with open("halucinated.txt", "w") as f: 
+    for item in hs:
+        if (hs[item] == 0):
+            f.write("halucinated graph: " + item)
+            halucinated = True
+        if (hs[item] > 1):
+            f.write("multiple graphs match same graph: " + item)
+            multiple = True
 
 if (some_missing):
     print("some graphs were not generated. see file missing_graphs.txt")
+
+if (halucinated):
+    print("some graphs were halucinated. see file halucinated.txt")
+
+if (multiple):
+    print("some graphs were generated multiple times. see file halucinated.txt")
+
 print("finished")

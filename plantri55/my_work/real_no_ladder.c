@@ -303,12 +303,5 @@ static int no_ladder(int nbtot, int nbop, int doflip){
         }
     }
 
-    int repr[MAXN + MAXE];
-    repr[0] = MAXN + MAXE + 10;
-    int colour[nv];
-    for (int i = 0; i < nv; i++){
-        colour[i] = MAXE + MAXN;
-    }
-    
     return TRUE;
 }
