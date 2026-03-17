@@ -20408,14 +20408,8 @@ get_graph_from_file(void)
 
 /****************************************************************************/
 
-static int all_repr1[MAXE][MAXE];
-static int repr_found1;
-
-static int all_repr2[MAXE][MAXE];
-static int repr_found2;
-
-static int all_repr3[MAXE][MAXE];
-static int repr_found3;
+static int all_repr[10][MAXE/3][MAXE];
+static int repr_found[10];
 
 static int colour[MAXN + 10];
 static int repr[MAXE];
@@ -20431,19 +20425,6 @@ static void find_canon_code(int* code, int* colour){
             e = e->next;
         }
     }
-}
-
-static void rep_printer(int code[], int num_v){
-    int index = 0;
-    int num_vert = 0;
-    while(num_vert < num_v){
-        fprintf(outfile, "%d ", code[index]);
-        if (code[index] == 0){
-            num_vert++;
-        }
-        index++;
-    }
-    fprintf(outfile, "\n");
 }
 
 static void rep_file(int code[], int num_v, FILE *f){
@@ -20473,7 +20454,16 @@ static int same_repr(int repr1[], int repr2[]){
     return 1;
 }
 
-static void save_repr(int repr[], int size){
+static void save_repr(int repr[], int type){
+    int end = max_repr_size();
+    for (int i = 0; i < end; i++){
+        all_repr[type][repr_found[type]][i] = repr[i];
+    }
+
+    repr_found[type]++;
+}
+
+/*static void old_save_repr(int repr[], int size){
     int end = max_repr_size();
     if (size == 1){
         for (int i = 0; i < end; i++){
@@ -20493,9 +20483,19 @@ static void save_repr(int repr[], int size){
         }
         repr_found3++;
     }
+}//*/
+
+static int is_new_repr(int repr[], int type){
+    for (int i = 0; i < repr_found[type]; i++){
+        if (same_repr(repr, all_repr[type][i])){
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
-static int is_new_repr(int repr[], int size){
+/*static int old_is_new_repr(int repr[], int size){
     if (size == 1){
         for (int i = 0; i < repr_found1; i++){
             if (same_repr(repr, all_repr1[i])){
@@ -20518,16 +20518,25 @@ static int is_new_repr(int repr[], int size){
         }
     }
     return 1;
+}//*/
+
+static int is_vert_canon(int representation[], int type){
+    if (is_new_repr(representation, type)){
+        save_repr(representation, type);
+        return 1;
+    }
+
+    return 0;
 }
 
-static int new_is_vert_canon(int representation[], int size){
+/*static int old_is_vert_canon(int representation[], int size){
     if (is_new_repr(representation, size)){
         save_repr(representation, size);
         return 1;
     }
 
     return 0;
-}
+}//*/
 
 static void
 initialize_narboni(void)
@@ -21064,8 +21073,7 @@ static int is_canon(int vert, int *nbtot){
     int num = 0;
     int test;
     EDGE *e = firstedge[vert];
-    testcanon_first_init(e, repr, colour);
-    for (int i = 0; i < degree[vert]; i++){
+    for (int i = 0; i < 4; i++){
         if (degree[e->end] == 5){
             if (degree[e->next->end] == 5 && degree[e->next->next->end] == 5){
                 test = testcanon_init(e, repr, colour);
@@ -21096,7 +21104,7 @@ static int is_canon(int vert, int *nbtot){
             e = firstedge[i];
             for (int j = 0; j < 4; j++){
                 if (degree[e->end] == 5){
-                    if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0 && skip_gadget_g(e) == 0){
+                    //if (skip_edge_gadget_e(e) == 0 && skip_edge_gadget_e_mirror(e) == 0){
                         if (degree[e->next->end] == 5 && degree[e->next->next->end] == 5){
                             test = testcanon(e, repr, colour);
                             if (test == 2){
@@ -21116,7 +21124,7 @@ static int is_canon(int vert, int *nbtot){
                                 num++;
                             }
                         }
-                    }
+                    //}
                 }
                 e = e->next;
             }
@@ -21124,16 +21132,14 @@ static int is_canon(int vert, int *nbtot){
     }
 
     *nbtot = num-1;
-
     return 1;
 }
 
 static int is_canon_oriented(int vert, int orient, int *nbtot){
-
     int num = 1;
     repr[0] = MAXN + MAXE + 10;
-    register EDGE *e = firstedge[vert];
     register int i;
+    register EDGE *e = firstedge[vert];
     for (i = 0; i < degree[vert]; i++){
         if (degree[e->end] == 5){
             if (orient == 0){
@@ -21152,24 +21158,22 @@ static int is_canon_oriented(int vert, int orient, int *nbtot){
             e = firstedge[i];
             for (int j = 0; j < 4; j++){
                 if (degree[e->end] == 5){
-                    if (1){
-                        if (degree[e->next->end] == 5){
-                            test = testcanon(e, repr, colour);
-                            if (test == 2 && skip_edge_gadget_e(e) == 0){
-                                return 0;
-                            }
-                            if (test == 1){
-                                num++;
-                            }
+                    if (degree[e->next->end] == 5){
+                        test = testcanon(e, repr, colour);
+                        if (test == 2 && skip_edge_gadget_e(e) == 0){
+                            return 0;
                         }
-                        if (degree[e->prev->end] == 5){
-                            test = testcanon_mirror(e, repr, colour);
-                            if (test == 2 && skip_edge_gadget_e_mirror(e) == 0){
-                                return 0;
-                            }
-                            if (test == 1){
-                                num++;
-                            }
+                        if (test == 1){
+                            num++;
+                        }
+                    }
+                    if (degree[e->prev->end] == 5){
+                        test = testcanon_mirror(e, repr, colour);
+                        if (test == 2 && skip_edge_gadget_e_mirror(e) == 0){
+                            return 0;
+                        }
+                        if (test == 1){
+                            num++;
                         }
                     }
                 }
@@ -21232,6 +21236,7 @@ my_canon(int lcolour[], EDGE *can_numberings[][MAXE], int vert, int *nbtot, int 
     else {
         last_vertex = vert;
     }
+
     minstart = degree[last_vertex];
 
 /* determine the smallest possible end for the vertex "last_vertex" */
@@ -21300,8 +21305,8 @@ my_canon(int lcolour[], EDGE *can_numberings[][MAXE], int vert, int *nbtot, int 
 
     for (i = 0; i < list_length; i++)
       {
-        if (skip_edge_gadget_e(startlist[i]) == 0 && 
-        skip_edge_gadget_e_mirror(startlist[i]) == 0 && skip_gadget_g(startlist[i]) == 0 && skip_gadget_h(startlist[i]) == 0){
+        if (skip_edge_gadget_e(startlist[i]) == 0 && skip_edge_gadget_e_mirror(startlist[i]) == 0 
+         && skip_gadget_g(startlist[i]) == 0 && skip_gadget_h(startlist[i]) == 0){
             test = testcanon(startlist[i], representation, colour);
             if (test == 1) { numblist[numbs] = startlist[i]; numbs++; }
             else if (test == 2) return 0;
@@ -21342,9 +21347,9 @@ static void find_narboni_extensions(
     EDGE *ext_g[], int* numextg,
     EDGE *ext_h[], int* numexth
 ){
-    repr_found1 = 0;
-    repr_found2 = 0;
-    repr_found3 = 0;
+    for (int i = 0; i < 10; i++){
+        repr_found[i] = 0;
+    }
 
     int ka = 0;
     int kam = 0;
@@ -21365,7 +21370,6 @@ static void find_narboni_extensions(
     int count_fours_with_2neigh_five = 0;
     int count_fours_with_3neigh_five = 0;
     int count_fours_with_4neigh_five = 0;
-
     for (int i = 0; i < nv; i++){
         if (degree[i] == 4){
             count_fours++;
@@ -21401,7 +21405,7 @@ static void find_narboni_extensions(
                 testcanon_first_init(helper->prev, repr, colour);
                 testcanon_mirror_init(helper->next, repr, colour);
 
-                if (numb_total == 1 || new_is_vert_canon(repr, 1)){
+                if (numb_total == 1 || is_vert_canon(repr, 0)){
                     ext_a[ka] = helper;
                     ka++;
                 }
@@ -21413,14 +21417,14 @@ static void find_narboni_extensions(
                 testcanon_first_init(helper->prev, repr, colour);
                 testcanon_mirror_init(helper->next, repr, colour);
 
-                if (numb_total == 1 || new_is_vert_canon(repr, 1)){
+                if (numb_total == 1 || is_vert_canon(repr, 0)){
                     ext_am[kam] = helper;
                     kam++;
                 }
                 reduce_a_mirror(helper, list);
             }
 
-            if (count_fours_with_3neigh_five < 4 && count_fours_with_4neigh_five < 4 && is_valid_extend_b(helper)){
+            if (count_fours_with_3neigh_five < 4 && is_valid_extend_b(helper)){
                 //if (helper < helper->prev->prev){
                 
                 extend_b(helper, list);
@@ -21433,7 +21437,7 @@ static void find_narboni_extensions(
                 if (testcanon(helper->prev->prev->invers, repr, colour) == 2){is_bad = 1;}
                 else if (testcanon_mirror(helper->prev->prev->invers->next, repr, colour) == 2){is_bad = 1;}
             
-                if (!is_bad && new_is_vert_canon(repr, 3)){
+                if (!is_bad && (is_vert_canon(repr, 2))){
                     ext_b[kb] = helper;
                     kb++;
                 }
@@ -21465,7 +21469,7 @@ static void find_narboni_extensions(
                     is_bad = 1;
                 }
                 
-                if (!is_bad && (numb_total == 1 || new_is_vert_canon(repr, 1))){
+                if (!is_bad && (numb_total == 1 || is_vert_canon(repr, 3))){
                     ext_c[kc] = helper;
                     kc++;
                 }
@@ -21474,13 +21478,13 @@ static void find_narboni_extensions(
             }
             
             if (count_fours_with_4neigh_five < 4 && is_valid_extend_d(helper)){
-                //if ((degree[helper->invers->next->next->end] == 4) + (degree[helper->next->invers->prev->prev->end] == 4) + 
-                //    (degree[helper->invers->next->next->next->end] == 5) >= count_fours_with_4neigh_five){
+                //if (((degree[helper->invers->next->next->end] == 4) + (degree[helper->next->invers->prev->prev->end] == 4) + 
+                //    (degree[helper->prev->end] == 5 && degree[helper->prev->prev->end] == 5)) >= count_fours_with_4neigh_five - 1){
                     extend_d(helper, list);
                     testcanon_first_init(helper->next->invers->prev, repr, colour);
                     testcanon_mirror_init(helper->next->invers->next, repr, colour);
                         
-                    if (numb_total == 1 || new_is_vert_canon(repr, 1)){
+                    if (numb_total == 1 || is_vert_canon(repr, 4)){
                         ext_d[kd] = helper;
                         kd++;
                     }
@@ -21488,22 +21492,25 @@ static void find_narboni_extensions(
                 //}
             }
             if (count_fours_with_3neigh_five < 3 && !count_fours_with_4neigh_five && is_valid_extend_e(helper)){
+                //if (((degree[helper->prev->end] == 5) + (degree[helper->next->invers->next->next->end] == 5) + ((degree[helper->invers->next->next->end] == 4) || 
+                //    (degree[helper->invers->prev->prev->end] == 4))) >= count_fours_with_3neigh_five){
                 extend_e(helper, list);
                 testcanon_first_init(helper->next->next->invers, repr, colour);
                 testcanon_mirror_init(helper->next->next->invers->next, repr, colour);
-                if (numb_total == 1 || new_is_vert_canon(repr, 1)){
+                if (numb_total == 1 || is_vert_canon(repr, 5)){
                     ext_e[ke] = helper;
                     ke++;
                 }
 
                 reduce_e(helper, list);
+                //}
             }
 
             if (count_fours_with_3neigh_five < 3 && !count_fours_with_4neigh_five && is_valid_extend_e_mirror(helper)){
                 extend_e_mirror(helper, list);
                 testcanon_first_init(helper->prev->prev->invers->prev, repr, colour);
                 testcanon_mirror_init(helper->prev->prev->invers, repr, colour);
-                if (numb_total == 1 || new_is_vert_canon(repr, 1)){
+                if (numb_total == 1 || is_vert_canon(repr, 5)){
                     ext_em[kem] = helper;
                     kem++;
                 }
@@ -21516,7 +21523,7 @@ static void find_narboni_extensions(
                 testcanon_first_init(helper->next->next->invers, repr, colour);
                 testcanon_mirror_init(helper->next->next->invers->next, repr, colour);
 
-                if (numb_total == 1 || new_is_vert_canon(repr, 2)){
+                if (numb_total == 1 || is_vert_canon(repr, 7)){
                     ext_f[kf] = helper;
                     kf++;
                 }
@@ -21553,7 +21560,7 @@ static void find_narboni_extensions(
                         } 
                     }
                 
-                    if (!is_bad && (numb_total == 1 || new_is_vert_canon(repr, 1))){
+                    if (!is_bad && (numb_total == 1 || is_vert_canon(repr, 8))){
                         ext_g[kg] = helper;
                         kg++;
                     }
@@ -21583,7 +21590,7 @@ static void find_narboni_extensions(
                     }
                     helper2 = helper2->next;
                 }
-                if (!is_bad && (numb_total == 1 || new_is_vert_canon(repr, 1))){
+                if (!is_bad && (numb_total == 1 || is_vert_canon(repr, 9))){
                     ext_h[kh] = helper;
                     kh++;
                 }
@@ -21714,6 +21721,8 @@ narboni_dispatch(void){
     scannarboni(2, 2);
     fclose(debugfile1);
 }
+
+/****************************************************************************/
 
 static void
 #ifdef __GNUC__

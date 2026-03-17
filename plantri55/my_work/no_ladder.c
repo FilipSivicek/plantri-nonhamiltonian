@@ -289,8 +289,6 @@ static int priority_calculator_v3(int code[], int num_v){
 #define FILTER gadgets_priority
 
 static int gadgets_priority(int nbtot, int nbop, int doflip){
-    debugfile2 = fopen("correct.txt", "a");
-
     for (int i = 0; i < nv; i++){
         if (degree[i] == 4){
             EDGE *e = firstedge[i];
@@ -318,7 +316,6 @@ static int gadgets_priority(int nbtot, int nbop, int doflip){
         }
     }
 
-    rep_printer(repr, nv);
-    
+    rep_file(repr, nv, outfile);
     return FALSE;
 }

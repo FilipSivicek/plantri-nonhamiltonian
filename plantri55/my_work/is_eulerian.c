@@ -6,6 +6,7 @@
    This plug-in filters out those graphs, which are not
    Eulerian.
 */
+#include "../plantri.c"
 
 #define FILTER is_eulerian
 
