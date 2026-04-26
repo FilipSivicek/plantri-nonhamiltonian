@@ -14,8 +14,250 @@ static void rep_printer(int code[], int num_v){
     fprintf(outfile, "\n");
 }
 
+// fixed colouring. colour[i] = degree[i] + MAXN
+// returns 0 if code starting at givenedge is not better, 1 if it is the same, 2 if it is better
+static int my_testcanon_init(EDGE *givenedge, int representation[]){
+    if (degree[givenedge->start] + MAXN > (*representation)){
+        return 0;
+    }
+    
+    register EDGE *run;
+    register int vertex;
+    EDGE *startedge[MAXN+1]; 
+    int number[MAXN], i, j, dgr; 
+    int better = 0; /* is the representation already better? */
+    int last_number = 1;
+
+    for (i = 0; i < nv; i++) number[i] = 0;
+
+    number[givenedge->start] = 1; 
+    startedge[0] = givenedge;
+    startedge[1] = givenedge->invers;
+
+    if (degree[givenedge->start] + MAXN < (*representation)){
+        better = 1;
+        *representation = degree[givenedge->start] + MAXN;
+    }
+    representation++;
+    
+    for(i = 0; i < nv; i++){
+        run = startedge[i];
+        dgr = degree[run->start];
+        for (j = 0; j < dgr; j++){
+            vertex = number[run->end];
+            if (!vertex){
+                startedge[last_number] = run->invers;
+                last_number++;
+                number[run->end] = last_number;
+                vertex = degree[run->end] + MAXN;
+            }
+
+            if (vertex < *representation){
+                better = 1;
+            }
+
+            if (vertex > *representation && !better){
+                return 0;
+            }
+
+            if (better){
+                *representation = vertex;
+            }
+            representation++;
+            run = run->next;
+        }
+
+        if (0 < *representation){
+            better = 1;
+        }
+
+        if (better){
+            *representation = 0;
+        }
+
+        representation++;
+    }
+
+    if (better){
+        return 2;
+    }
+
+    return 1;
+}
 
 // fixed colouring. colour[i] = degree[i] + MAXN
+// returns 0 if code starting at givenedge is not better, 1 if it is the same, 2 if it is better
+static int my_testcanon(EDGE *givenedge, int representation[]){
+    if (degree[givenedge->start] + MAXN > (*representation)){
+        return 0;
+    }
+    
+    register EDGE *run;
+    register int vertex;
+    EDGE *startedge[MAXN+1]; 
+    int number[MAXN], i, j, dgr; 
+    int last_number = 1;
+
+    for (i = 0; i < nv; i++) number[i] = 0;
+
+    number[givenedge->start] = 1; 
+    startedge[0] = givenedge;
+    startedge[1] = givenedge->invers;
+
+    if (degree[givenedge->start] + MAXN < (*representation)){
+        return 2;
+    }
+    representation++;
+    
+    for(i = 0; i < nv; i++){
+        run = startedge[i];
+        dgr = degree[run->start];
+        for (j = 0; j < dgr; j++){
+            vertex = number[run->end];
+            if (!vertex){
+                startedge[last_number] = run->invers;
+                last_number++;
+                number[run->end] = last_number;
+                vertex = degree[run->end] + MAXN;
+            }
+
+            if (vertex < *representation){
+                return 2;
+            }
+
+            if (vertex > *representation){
+                return 0;
+            }
+
+            representation++;
+            run = run->next;
+        }
+
+        if (0 < *representation){
+            return 2;
+        }
+
+        representation++;
+    }
+
+    return 1;
+}
+
+static int my_testcanon_init_mirror(EDGE *givenedge, int representation[]){
+    if (degree[givenedge->start] + MAXN > (*representation)){
+        return 0;
+    }
+    
+    register EDGE *run;
+    register int vertex;
+    EDGE *startedge[MAXN+1]; 
+    int number[MAXN], i, j, dgr; 
+    int last_number = 1;
+
+    for (i = 0; i < nv; i++) number[i] = 0;
+
+    number[givenedge->start] = 1; 
+    startedge[0] = givenedge;
+    startedge[1] = givenedge->invers;
+
+    if (degree[givenedge->start] + MAXN < (*representation)){
+        return 2;
+    }
+    representation++;
+    
+    for(i = 0; i < nv; i++){
+        run = startedge[i];
+        dgr = degree[run->start];
+        for (j = 0; j < dgr; j++){
+            vertex = number[run->end];
+            if (!vertex){
+                startedge[last_number] = run->invers;
+                last_number++;
+                number[run->end] = last_number;
+                vertex = degree[run->end] + MAXN;
+            }
+
+            if (vertex < *representation){
+                return 2;
+            }
+
+            else if (vertex > *representation){
+                return 0;
+            }
+
+            representation++;
+            run = run->prev;
+        }
+
+        if (0 < *representation){
+            return 2;
+        }
+
+        representation++;
+    }
+
+    return 1;
+}
+
+static int my_testcanon_mirror(EDGE *givenedge, int representation[]){
+    if (degree[givenedge->start] + MAXN > (*representation)){
+        return 0;
+    }
+    
+    register EDGE *run;
+    register int vertex;
+    EDGE *startedge[MAXN+1]; 
+    int number[MAXN], i, j, dgr; 
+    int last_number = 1;
+
+    for (i = 0; i < nv; i++) number[i] = 0;
+
+    number[givenedge->start] = 1; 
+    startedge[0] = givenedge;
+    startedge[1] = givenedge->invers;
+
+    if (degree[givenedge->start] + MAXN < (*representation)){
+        return 2;
+    }
+    representation++;
+    
+    for(i = 0; i < nv; i++){
+        run = startedge[i];
+        dgr = degree[run->start];
+        for (j = 0; j < dgr; j++){
+            vertex = number[run->end];
+            if (!vertex){
+                startedge[last_number] = run->invers;
+                last_number++;
+                number[run->end] = last_number;
+                vertex = degree[run->end] + MAXN;
+            }
+
+            if (vertex < *representation){
+                return 2;
+            }
+
+            else if (vertex > *representation){
+                return 0;
+            }
+
+            representation++;
+            run = run->prev;
+        }
+
+        if (0 < *representation){
+            return 2;
+        }
+
+        representation++;
+    }
+
+    return 1;
+}
+
+
+// fixed colouring. colour[i] = degree[i] + MAXN
+// returns 0 if code starting at givenedge is not better, 1 if it is the same, 2 if it is better
 static int my_testcanon_init_v3(EDGE *givenedge, int representation[]){
     if (degree[givenedge->start] + MAXN > (*representation)){
         return 0;
@@ -64,30 +306,6 @@ static int my_testcanon_init_v3(EDGE *givenedge, int representation[]){
                 *representation = vertex;
             }
             representation++;
-
-            if (i == 0 && j == 1 && degree[givenedge->start] == 4 
-            && degree[run->prev->end] == 5 && degree[run->end] == 5){
-                if (degree[run->invers->next->next->end] == 4){
-                    startedge[last_number] = run->invers->next->next->invers;
-                    last_number++;
-                    number[run->invers->next->next->end] = last_number;
-
-                    vertex = degree[run->invers->next->next->end] + MAXN;
-                    if (vertex < *representation){
-                        better = 1;
-                    }
-
-                    if (vertex > *representation && !better){
-                        return 0;
-                    }
-
-                    if (better){
-                        *representation = vertex;
-                    }
-                    representation++;
-                }
-            }
-
             run = run->next;
         }
 
@@ -149,7 +367,7 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[]){
                 better = 1;
             }
 
-            if (vertex > *representation && !better){
+            else if (vertex > *representation && !better){
                 return 0;
             }
 
@@ -157,30 +375,6 @@ static int my_testcanon_init_mirror_v3(EDGE *givenedge, int representation[]){
                 *representation = vertex;
             }
             representation++;
-
-            if (i == 0 && j == 1 && degree[givenedge->start] == 4 
-            && degree[run->next->end] == 5 && degree[run->end] == 5){
-                if (degree[run->invers->prev->prev->end] == 4){
-                    startedge[last_number] = run->invers->prev->prev->invers;
-                    last_number++;
-                    number[run->invers->prev->prev->end] = last_number;
-
-                    vertex = degree[run->invers->prev->prev->end] + MAXN;
-                    if (vertex < *representation){
-                        better = 1;
-                    }
-
-                    if (vertex > *representation && !better){
-                        return 0;
-                    }
-
-                    if (better){
-                        *representation = vertex;
-                    }
-                    representation++;
-                }
-            }
-
             run = run->prev;
         }
 
