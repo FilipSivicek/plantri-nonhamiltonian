@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= 
+CFLAGS=
 LDFLAGS=
 VERSION=55
 MY_WORK=my_work
@@ -14,6 +14,9 @@ tools: plantri_nft plantri_adj4 plantri_maxd plantri_mdcount plantri_ad \
 
 plantri: plantri.c
 	${CC} -o plantri ${CFLAGS} plantri.c ${LDFLAGS} -ggdb3
+
+plantri_gmon: plantri.c
+	${CC} -pg -o plantri ${CFLAGS} plantri.c ${LDFLAGS} -ggdb3
 
 plantri_plantri: plantri.c
 	${CC} -o ./bin/plantri ${CFLAGS} plantri.c ${LDFLAGS}
