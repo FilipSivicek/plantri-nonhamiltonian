@@ -14,3 +14,7 @@ plantri
 /plantri55/my_plantri
 /plantri55/my_work/my_plantri
 *.out
+*.[0-9]*
+*.log
+*.mpx
+bakalarka_text/

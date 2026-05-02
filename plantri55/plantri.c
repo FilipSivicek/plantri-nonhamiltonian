@@ -7533,10 +7533,12 @@ scansimple(int nbtot, int nbop)
             if (FAST_FILTER_SIMPLE)
 #endif 
             {
-                if (nc == 1 && nv == maxnv && !needgroup)
+                if (nc == 1 && nv == maxnv && !needgroup){
                     got_one(1,1,3);
-                else if (canon(colour,numbering,&xnbtot,&xnbop))
+                }
+                else if (canon(colour,numbering,&xnbtot,&xnbop)){
                     scansimple(xnbtot,xnbop);
+                }
             }
             reduce3(ext3[i]);
         }
@@ -7564,7 +7566,7 @@ scansimple(int nbtot, int nbop)
                 for (nb = (EDGE**)numbering[0]; nb < nblim; nb += MAXE)
                     if (*nb == e1 || *nb == e2) break;
     
-                if (nb < nblim) scansimple(xnbtot,xnbop); 
+                if (nb < nblim) {scansimple(xnbtot,xnbop);} 
             }
         }
 
@@ -7593,7 +7595,7 @@ scansimple(int nbtot, int nbop)
                             if (valid5edge(e2->next)) e2 = e2->next;
                             else                      e2 = e2->prev;
                     }
-                    if (e2 == e1) scansimple(xnbtot,xnbop);
+                    if (e2 == e1) {scansimple(xnbtot,xnbop);}
                 }
                 else
                 {
@@ -7603,7 +7605,7 @@ scansimple(int nbtot, int nbop)
                     for ( ; nb < nblim; nb += MAXE) 
                         if (*nb == e1) break; 
          
-                    if (nb < nblim) scansimple(xnbtot,xnbop);  
+                    if (nb < nblim) {scansimple(xnbtot,xnbop);}  
                 }
             }
         }
@@ -20414,38 +20416,8 @@ static int colour[MAXN];
 static int repr[MAXE];
 static int starting_gadget[MAXN];
 
-static void find_canon_code(int* code, int* colour){
-    identifier = 1;
-    code[0] = MAXN + MAXE + 10;
-    for (int i = 0; i < nv; i++){
-        EDGE *e = firstedge[i];
-        for (int j = 0; j < degree[i]; j++){
-            testcanon_init(e, code, colour);
-            testcanon_mirror_init(e, code, colour);
-            e = e->next;
-        }
-    }
-}
-
-static void rep_file(int code[], int num_v, FILE *f){
-    int index = 0;
-    int num_vert = 0;
-    while(num_vert < num_v){
-        fprintf(f, "%d ", code[index]);
-        if (code[index] == 0){
-            num_vert++;
-        }
-        index++;
-    }
-    fprintf(f, "\n");
-}
-
-static int max_repr_size(){
-    return ne;
-}
-
 static int same_repr(int repr1[], int repr2[]){
-    int end = max_repr_size();
+    int end = ne;
     int vertex_checked = 0;
     for (int i = 0; i < end; i++){
         if (repr1[i] != repr2[i]){
@@ -20462,7 +20434,7 @@ static int same_repr(int repr1[], int repr2[]){
 }
 
 static void save_repr(int repr[], int type){
-    int end = max_repr_size();
+    int end = ne;
     for (int i = 0; i < end; i++){
         all_repr[type][repr_found[type]][i] = repr[i];
     }
@@ -21949,8 +21921,6 @@ static void
 scannarboni(int nbtot, int nbop){
     if (nv == maxnv){
         got_one(nbtot, nbop, 4);
-        //find_canon_code(repr, colour);
-        //rep_file(repr, nv, canon_code_file);
         return;
     }
 
@@ -21987,49 +21957,49 @@ scannarboni(int nbtot, int nbop){
 
     for (i = 0; i < numextb; i++){
         extend_b(extb[i], list);
-        if (is_canon_2_fives(extb[i]->next->end, extb[i]->prev->prev->end, &xnbtot)) scannarboni(xnbtot, 2);
+        if (is_canon_2_fives(extb[i]->next->end, extb[i]->prev->prev->end, &xnbtot)){scannarboni(xnbtot, 2);}
         reduce_b(extb[i], list);
     }
 
     for (i = 0; i < numextc; i++){
         extend_c(extc[i], list);
-        if (is_canon_4_fives(nv - 1, &xnbtot)) scannarboni(xnbtot, 2);
+        if (is_canon_4_fives(nv - 1, &xnbtot)){scannarboni(xnbtot, 2);}
         reduce_c(extc[i], list);
     }
 
     for (i = 0; i < numextd; i++){
         extend_d(extd[i], list);
-        if (is_canon_3_fives(nv - 1, &xnbtot)) scannarboni(xnbtot, 2);
+        if (is_canon_3_fives(nv - 1, &xnbtot)){scannarboni(xnbtot, 2);}
         reduce_d(extd[i], list);
     }
 
     for (i = 0; i < numexte; i++){
         extend_e(exte[i], list);
-        if (is_canon_oriented(exte[i]->next->next->end, 1, &xnbtot))scannarboni(xnbtot, 2);
+        if (is_canon_oriented(exte[i]->next->next->end, 1, &xnbtot)){scannarboni(xnbtot, 2);}
         reduce_e(exte[i], list);
     }
 
     for (i = 0; i < numextem; i++){
         extend_e_mirror(extem[i], list);
-        if (is_canon_oriented(extem[i]->prev->prev->end, 0, &xnbtot))scannarboni(xnbtot, 2);
+        if (is_canon_oriented(extem[i]->prev->prev->end, 0, &xnbtot)){scannarboni(xnbtot, 2);}
         reduce_e_mirror(extem[i], list);
     }
 
     for (i = 0; i < numextf; i++){
         extend_f(extf[i], list);
-        if (is_canon_2_fives(extf[i]->next->next->end, -1, &xnbtot)) scannarboni(xnbtot, xnbop);
+        if (is_canon_2_fives(extf[i]->next->next->end, -1, &xnbtot)){scannarboni(xnbtot, xnbop);}
         reduce_f(extf[i], list);
     }
 
     for (i = 0; i < numextg; i++){
         extend_g(extg[i], list);
-        if (my_canon(colour, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, &xnbtot, &xnbop)){scannarboni(xnbtot, xnbop);}
         reduce_g(extg[i], list);
     }
 
     for (i = 0; i < numexth; i++){
         extend_h(exth[i], list);
-        if (my_canon(colour, &xnbtot, &xnbop)) scannarboni(xnbtot, xnbop);
+        if (my_canon(colour, &xnbtot, &xnbop)) {scannarboni(xnbtot, xnbop);}
         reduce_h(exth[i], list);
     }
 }
@@ -22043,11 +22013,9 @@ narboni_dispatch(void){
 
     open_output_file();
 
-    //canon_code_file = fopen("output_verifier/canon_codes_my_gen.txt", "w");
     initialize_narboni();
 
     scannarboni(2, 2);
-    //fclose(canon_code_file);
 }
 
 /****************************************************************************/
